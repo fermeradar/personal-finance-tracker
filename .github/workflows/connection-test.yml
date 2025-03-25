@@ -1,0 +1,19 @@
+name: VPS Connection Test
+
+on:
+  workflow_dispatch:  # This allows manual triggering
+
+jobs:
+  test-vps-connection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" | tr -d '\r' | tr '\\n' '\n' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Test VPS Connection
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "echo 'Connection successful from GitHub Actions'; hostname; date"
