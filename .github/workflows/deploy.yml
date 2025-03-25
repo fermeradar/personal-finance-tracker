@@ -51,6 +51,8 @@ jobs:
             -Dsonar.test.inclusions=tests/**/*.test.js
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov-report/lcov.info
             -Dsonar.coverage.exclusions=tests/**/*,config/**/*,scripts/**/*
+            -Dsonar.organization=personal-finance-tracker
+            -Dsonar.host.url=https://sonarcloud.io
 
   security:
     runs-on: ubuntu-latest
@@ -86,9 +88,20 @@ jobs:
 
       - name: Run security audit
         run: |
+          echo "Running security audit..."
           npm audit
-          # Only fail if there are high or critical vulnerabilities
-          npm audit --json | jq -e '.metadata.vulnerabilities.high == 0 and .metadata.vulnerabilities.critical == 0'
+          
+          echo "Checking for critical and high vulnerabilities..."
+          AUDIT_RESULT=$(npm audit --json)
+          CRITICAL=$(echo $AUDIT_RESULT | jq -r '.metadata.vulnerabilities.critical // 0')
+          HIGH=$(echo $AUDIT_RESULT | jq -r '.metadata.vulnerabilities.high // 0')
+          
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "Critical or high vulnerabilities found. Failing build."
+            exit 1
+          else
+            echo "No critical or high vulnerabilities found. Continuing with moderate vulnerabilities."
+          fi
 
   test:
     runs-on: ubuntu-latest
