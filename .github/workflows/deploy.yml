@@ -3,7 +3,8 @@ name: Deploy to Production
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -11,157 +12,96 @@ jobs:
     environment: production
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run tests
-      env:
-        NODE_ENV: test
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_USER: test_user
-        DB_PASSWORD: test_password
-        DB_NAME: finance_tracker_test
-        JWT_SECRET: test_secret
-        REDIS_URL: redis://localhost:6379/1
-      run: npm test
+      - name: Run tests
+        run: npm test
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: test_user
+          DB_PASSWORD: test_password
+          DB_NAME: finance_tracker_test
+          JWT_SECRET: test_secret
 
-    - name: Build application
-      run: npm run build
+      - name: Run database migrations
+        run: npm run migrate
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
-    - name: Deploy via SSH
-      env:
-        ENV_FILE: ${{ secrets.ENV_FILE }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        VPS_HOST: ${{ secrets.VPS_HOST }}
-        VPS_USER: ${{ secrets.VPS_USER }}
-        VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-      run: |
-        echo "Starting deployment process..."
-        ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} -i ${{ secrets.VPS_SSH_KEY }} << 'EOF'
-          echo "=== Deployment started at $(date) ==="
-          
-          # Check if directory exists
-          if [ ! -d "/root/PersonalFinanceTracker" ]; then
-            echo "Cloning repository..."
-            git clone git@github.com:fermeradar/personal-finance-tracker.git /root/PersonalFinanceTracker
-          else
-            echo "Repository exists, updating..."
-          fi
-          
-          cd /root/PersonalFinanceTracker
-          echo "Current directory: $(pwd)"
-          
-          echo "Fetching latest changes..."
-          git fetch origin
-          
-          echo "Resetting to main branch..."
-          git reset --hard origin/main
-          
-          echo "Setting up environment file..."
-          echo "$ENV_FILE" > .env
-          
-          # Add Telegram configuration
-          echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
-          echo "TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> .env
-          
-          echo "Creating necessary directories..."
-          mkdir -p uploads/temp logs backups cache credentials
-          
-          echo "Installing dependencies..."
-          npm ci --production
-          
-          echo "Building application..."
-          npm run build
-          
-          echo "Running database migrations..."
-          npm run migrate
-          
-          echo "Restarting PM2 process..."
-          pm2 restart finance-tracker || pm2 start ecosystem.config.js --name finance-tracker
-          
-          echo "Cleaning up old files..."
-          find uploads/temp -type f -mtime +1 -delete
-          find logs -type f -mtime +7 -delete
-          
-          echo "=== Deployment completed at $(date) ==="
-        EOF
+      - name: Deploy to production
+        run: |
+          # Add your deployment commands here
+          echo "Deploying to production..."
+        env:
+          NODE_ENV: production
+          PORT: ${{ secrets.PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
-    - name: Notify deployment status
-      if: always()
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const status = context.job.status;
-          const message = status === 'success' 
-            ? '✅ Deployment successful!' 
-            : '❌ Deployment failed!';
-          
-          await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-            body: `${message}\n\nDeployment completed at ${new Date().toISOString()}`
-          });
+      - name: Backup database
+        run: |
+          # Add your backup commands here
+          echo "Backing up database..."
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
-  restore_backup:
-    runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+      - name: Restore backup
+        run: |
+          # Add your restore commands here
+          echo "Restoring backup..."
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Restore backup
-      env:
-        BACKUP_DATE: ${{ github.event.inputs.backup_date }}
-        BACKUP_TYPE: ${{ github.event.inputs.backup_type }}
-        ENVIRONMENT: ${{ github.event.inputs.environment }}
-        TRIGGERED_BY: ${{ github.actor }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      run: |
-        echo "Starting backup restoration process..."
-        # Add restoration process here
-        echo "=== Backup restoration completed successfully! ==="
-        echo "Restoration Details:"
-        echo "• Status: Success"
-        echo "• Time: $(date -Iseconds)"
-        echo "• Backup Type: $BACKUP_TYPE"
-        echo "• Backup Date: $BACKUP_DATE"
-        echo "• Environment: $ENVIRONMENT"
-        echo "• Triggered by: $TRIGGERED_BY"
-
-    - name: Notify restoration status
-      if: always()
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const status = context.job.status;
-          const message = status === 'success' 
-            ? '✅ Backup restoration completed successfully!' 
-            : '❌ Backup restoration failed!';
-          
-          await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-            body: `${message}\n\nRestoration completed at ${new Date().toISOString()}`
-          });
+      - name: Notify Status
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const status = context.job.status;
+            const message = status === 'success' 
+              ? '✅ Operation completed successfully!' 
+              : '❌ Operation failed!';
+            
+            // Only try to comment if this is a pull request
+            if (context.eventName === 'pull_request') {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `${message}\n\nOperation completed at ${new Date().toISOString()}`
+              });
+            }
+            
+            // For pushes to main, create a new issue with the status
+            if (context.eventName === 'push' && context.ref === 'refs/heads/main') {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `Deployment Status - ${new Date().toISOString()}`,
+                body: `${message}\n\nOperation completed at ${new Date().toISOString()}\n\nTriggered by: ${context.actor}`
+              });
+            }
