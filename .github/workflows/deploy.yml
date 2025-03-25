@@ -19,20 +19,51 @@ jobs:
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -t rsa ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          echo "SSH setup completed"
 
       - name: Test SSH Connection
         run: |
+          echo "Testing SSH connection to VPS..."
           ssh -v -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "echo 'Connection successful'"
+          echo "SSH connection test passed"
 
       - name: Deploy via SSH
         env:
           ENV_FILE: ${{ secrets.ENV_FILE }}
         run: |
+          echo "Starting deployment process..."
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-            cd /root/PersonalFinanceTracker || git clone git@github.com:fermeradar/personal-finance-tracker.git /root/PersonalFinanceTracker
+            echo "=== Deployment started at $(date) ==="
+            
+            # Check if directory exists
+            if [ ! -d "/root/PersonalFinanceTracker" ]; then
+              echo "Cloning repository..."
+              git clone git@github.com:fermeradar/personal-finance-tracker.git /root/PersonalFinanceTracker
+            else
+              echo "Repository exists, updating..."
+            fi
+            
             cd /root/PersonalFinanceTracker
+            echo "Current directory: $(pwd)"
+            
+            echo "Fetching latest changes..."
             git fetch origin
+            
+            echo "Resetting to main branch..."
             git reset --hard origin/main
+            
+            echo "Setting up environment file..."
             echo "$ENV_FILE" > .env
-            echo "Deployment completed successfully"
+            
+            echo "=== Deployment completed at $(date) ==="
+            echo "Current git status:"
+            git status
           EOF
+          echo "Deployment process completed"
+
+      - name: Deployment Status
+        run: |
+          echo "✅ Deployment completed successfully"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
