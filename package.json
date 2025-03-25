@@ -35,12 +35,13 @@
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
-    "json2csv": "^5.0.7",
     "node-telegram-bot-api": "^0.63.0",
     "pg": "^8.11.3",
     "winston": "^3.11.0"
   },
   "devDependencies": {
+    "@eslint/config-array": "^2.1.0",
+    "@eslint/object-schema": "^1.0.0",
     "eslint": "^8.57.0",
     "eslint-plugin-node": "^11.1.0",
     "husky": "^9.0.11",
