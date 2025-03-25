@@ -5,9 +5,9 @@ const { exec } = require('child_process');
 const util = require('util');
 const path = require('path');
 const fs = require('fs');
-const backupService = require('../services/backupService');
-const { translate } = require('../services/i18n');
-const { getUserLanguage } = require('../services/userManager');
+const backupService = require('../services/core/backup-service');
+const { translate } = require('../services/localization/i18n-service');
+const { getUserLanguage } = require('../services/core/user-manager');
 
 const execPromise = util.promisify(exec);
 const pool = new Pool({

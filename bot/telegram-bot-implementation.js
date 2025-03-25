@@ -7,12 +7,12 @@ const fs = require('fs');
 const axios = require('axios');
 
 // Import services
-const languageHandler = require('../services/languageHandler');
-const currencyConverter = require('../services/currencyConverter');
-const productNormalizer = require('../services/productNormalizer');
-const documentSourceHandler = require('../services/documentSourceHandler');
-const expenseHandlers = require('../handlers/expenseManagementHandlers');
-const expenseDuplicateHandler = require('../handlers/expenseDuplicateHandler');
+const languageHandler = require('../services/localization/language-handling-service');
+const currencyConverter = require('../services/core/currency-conversion-service');
+const productNormalizer = require('../services/core/product-normalization-service');
+const documentSourceHandler = require('../services/core/document-source-handler');
+const expenseHandlers = require('../core/handlers/expenseManagementHandlers');
+const expenseDuplicateHandler = require('../core/handlers/expenseDuplicateHandler');
 
 // Initialize database
 const pool = new Pool({
@@ -315,4 +315,9 @@ async function handleOnboarding(ctx) {
       } else {
         await ctx.reply(await ctx.i18n(
           'Please enter a valid language code (en or ru).',
-          'Пожалуйста, введите правильный код языка (
+          'Пожалуйста, введите правильный код языка (en или ru).'
+        ));
+      }
+      break;
+  }
+}
