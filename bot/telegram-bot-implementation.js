@@ -11,8 +11,8 @@ const languageHandler = require('../services/localization/language-handling-serv
 const currencyConverter = require('../services/core/currency-conversion-service');
 const productNormalizer = require('../services/core/product-normalization-service');
 const documentSourceHandler = require('../services/core/document-source-handler');
-const expenseHandlers = require('../core/handlers/expenseManagementHandlers');
-const expenseDuplicateHandler = require('../core/handlers/expenseDuplicateHandler');
+const expenseHandlers = require('../core/handlers/expense-management-handlers');
+const expenseDuplicateHandler = require('../core/handlers/expense-duplicate-handler');
 
 // Initialize database
 const pool = new Pool({

@@ -32,19 +32,15 @@ bot.use(session());
 
 // Import scenes
 const addExpenseScene = require('../bot/scenes/add-expense-scene');
-const viewExpensesScene = require('../bot/scenes/view-expenses-scene');
 const settingsScene = require('../bot/scenes/settings-scene');
 const receiptProcessingScene = require('../bot/scenes/receipt-processing-scene');
-const utilityBillScene = require('../bot/scenes/utility-bill-scene');
 const benchmarkScene = require('../bot/scenes/benchmark-scene');
 
 // Create scene manager
 const stage = new Scenes.Stage([
   addExpenseScene,
-  viewExpensesScene,
   settingsScene,
   receiptProcessingScene,
-  utilityBillScene,
   benchmarkScene
 ]);
 
