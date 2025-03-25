@@ -1,9 +1,9 @@
 // src/scenes/settingsScene.js
 const { Scenes, Markup } = require('telegraf');
 const { Pool } = require('pg');
-const { getUserLanguage } = require('../services/userManager');
-const currencyConverter = require('../services/currencyConverter');
-const { translate } = require('../services/i18n');
+const { getUserLanguage } = require('../services/core/user-manager');
+const currencyConverter = require('../services/core/currency-conversion-service');
+const { translate } = require('../services/localization/i18n-service');
 const logger = require('../utils/logger');
 
 // Initialize PostgreSQL connection pool

@@ -3,8 +3,8 @@ const { Scenes, Markup } = require('telegraf');
 const { Pool } = require('pg');
 const path = require('path');
 const fs = require('fs');
-const { getUserLanguage } = require('../services/userManager');
-const receiptProcessor = require('../services/receiptProcessor');
+const { getUserLanguage } = require('../services/core/user-manager');
+const receiptProcessor = require('../services/receipt/receipt-processing-service');
 const logger = require('../utils/logger');
 
 // Initialize PostgreSQL connection pool

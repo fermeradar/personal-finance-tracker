@@ -1,8 +1,8 @@
 // src/scenes/benchmarkScene.js
 const { Scenes, Markup } = require('telegraf');
 const { Pool } = require('pg');
-const { getUserLanguage } = require('../services/userManager');
-const expenseBenchmarkService = require('../services/expenseBenchmarkService');
+const { getUserLanguage } = require('../services/core/user-manager');
+const expenseBenchmarkService = require('../services/analytics/expense-benchmark-service');
 const logger = require('../utils/logger');
 
 // Initialize PostgreSQL connection pool
