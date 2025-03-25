@@ -51,7 +51,7 @@ jobs:
             -Dsonar.test.inclusions=tests/**/*.test.js
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov-report/lcov.info
             -Dsonar.coverage.exclusions=tests/**/*,config/**/*,scripts/**/*
-            -Dsonar.organization=personal-finance-tracker
+            -Dsonar.organization=fermeradar
             -Dsonar.host.url=https://sonarcloud.io
 
   security:
