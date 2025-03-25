@@ -7,7 +7,86 @@ on:
     branches: [ main ]
 
 jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run SonarQube analysis
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=personal-finance-tracker
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.test.inclusions=tests/**/*.test.js
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov-report/lcov.info
+            -Dsonar.coverage.exclusions=tests/**/*,config/**/*,scripts/**/*
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run security audit
+        run: |
+          npm audit
+          # Only fail if there are high or critical vulnerabilities
+          npm audit --json | jq -e '.metadata.vulnerabilities.high == 0 and .metadata.vulnerabilities.critical == 0'
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: test_user
+          DB_PASSWORD: test_password
+          DB_NAME: finance_tracker_test
+          JWT_SECRET: test_secret
+
   deploy:
+    needs: [code-quality, security, test]
     runs-on: ubuntu-latest
     environment: production
 
@@ -34,17 +113,6 @@ jobs:
           
           echo "Verifying installation..."
           npm list --depth=0
-
-      - name: Run tests
-        run: npm test
-        env:
-          NODE_ENV: test
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USER: test_user
-          DB_PASSWORD: test_password
-          DB_NAME: finance_tracker_test
-          JWT_SECRET: test_secret
 
       - name: Run database migrations
         run: npm run migrate
