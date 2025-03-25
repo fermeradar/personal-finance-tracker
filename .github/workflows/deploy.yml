@@ -75,6 +75,55 @@ jobs:
             echo "Checking container status..."
             docker ps
             
+            # Container Health Check Function
+            check_container_health() {
+              local container_name=$1
+              local max_attempts=5
+              local attempt=1
+              
+              echo "Checking health of $container_name..."
+              while [ $attempt -le $max_attempts ]; do
+                if docker inspect --format='{{.State.Health.Status}}' $container_name 2>/dev/null | grep -q "healthy"; then
+                  echo "✅ $container_name is healthy"
+                  return 0
+                elif docker inspect --format='{{.State.Health.Status}}' $container_name 2>/dev/null | grep -q "unhealthy"; then
+                  echo "❌ $container_name is unhealthy"
+                  docker logs $container_name
+                  return 1
+                fi
+                echo "Attempt $attempt/$max_attempts: Waiting for $container_name to be healthy..."
+                sleep 10
+                attempt=$((attempt + 1))
+              done
+              echo "❌ $container_name failed to become healthy after $max_attempts attempts"
+              return 1
+            }
+            
+            # Check health of each container
+            echo "=== Performing container health checks ==="
+            for container in finance-tracker-db finance-tracker-bot finance-tracker-n8n finance-tracker-pgadmin finance-tracker-backup; do
+              if docker ps --format '{{.Names}}' | grep -q "^$container$"; then
+                check_container_health $container
+                if [ $? -ne 0 ]; then
+                  echo "❌ Health check failed for $container"
+                  exit 1
+                fi
+              fi
+            done
+            
+            # Resource Monitoring
+            echo "=== Container Resource Usage ==="
+            docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}"
+            
+            # Log Monitoring
+            echo "=== Recent Container Logs ==="
+            for container in finance-tracker-db finance-tracker-bot finance-tracker-n8n finance-tracker-pgadmin finance-tracker-backup; do
+              if docker ps --format '{{.Names}}' | grep -q "^$container$"; then
+                echo "=== Logs for $container ==="
+                docker logs --tail 10 $container
+              fi
+            done
+            
             echo "=== Deployment completed at $(date) ==="
             echo "Current git status:"
             git status

@@ -15,8 +15,8 @@ const {
 } = require('./middleware/securityMiddleware');
 
 // Import services
-const backupService = require('./services/backupService');
-const deploymentService = require('./services/deploymentService');
+const backupService = require('../services/core/backup-service');
+const deploymentService = require('../services/core/deployment-service');
 const logger = require('./utils/logger');
 
 // Initialize database pool
@@ -31,12 +31,12 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 bot.use(session());
 
 // Import scenes
-const addExpenseScene = require('./scenes/addExpenseScene');
-const viewExpensesScene = require('./scenes/viewExpensesScene');
-const settingsScene = require('./scenes/settingsScene');
-const receiptProcessingScene = require('./scenes/receiptProcessingScene');
-const utilityBillScene = require('./scenes/utilityBillScene');
-const benchmarkScene = require('./scenes/benchmarkScene');
+const addExpenseScene = require('../bot/scenes/addExpenseScene');
+const viewExpensesScene = require('../bot/scenes/viewExpensesScene');
+const settingsScene = require('../bot/scenes/settingsScene');
+const receiptProcessingScene = require('../bot/scenes/receiptProcessingScene');
+const utilityBillScene = require('../bot/scenes/utilityBillScene');
+const benchmarkScene = require('../bot/scenes/benchmarkScene');
 
 // Create scene manager
 const stage = new Scenes.Stage([

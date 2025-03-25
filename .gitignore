@@ -1,1 +1,33 @@
+# Environment variables
+.env
+.env.*
+
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Docker volumes
+docker/volumes/
+
+# Test files
+*.test.*
+test.*
+deployment-test.md
+connection-test.md
