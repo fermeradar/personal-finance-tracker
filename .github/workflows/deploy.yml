@@ -55,6 +55,26 @@ jobs:
             echo "Setting up environment file..."
             echo "$ENV_FILE" > .env
             
+            echo "Creating necessary directories..."
+            mkdir -p uploads/temp logs backups cache credentials
+            
+            echo "Setting up Docker..."
+            # Stop existing containers
+            echo "Stopping existing containers..."
+            docker-compose -f docker/docker-compose.yml down || true
+            
+            # Build and start containers
+            echo "Building and starting containers..."
+            docker-compose -f docker/docker-compose.yml up --build -d
+            
+            # Wait for containers to be healthy
+            echo "Waiting for containers to be healthy..."
+            sleep 30
+            
+            # Check container status
+            echo "Checking container status..."
+            docker ps
+            
             echo "=== Deployment completed at $(date) ==="
             echo "Current git status:"
             git status
