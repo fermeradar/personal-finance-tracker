@@ -30,6 +30,6 @@ jobs:
             cd /root/PersonalFinanceTracker;
             git pull;
             echo "$ENV_FILE" > .env;
-            docker-compose down;
-            docker-compose up --build -d
+            docker-compose -f docker/docker-compose.yml down
+            docker-compose -f docker/docker-compose.yml up --build -d
           EOF

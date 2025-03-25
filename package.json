@@ -1,9 +1,40 @@
 {
   "name": "personal-finance-tracker",
   "version": "1.0.0",
+<<<<<<< HEAD
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js"
   },
   "dependencies": {}
+=======
+  "description": "A Telegram bot-based personal finance tracker with analytics, localization, and receipt processing.",
+  "main": "core/app.js",
+  "scripts": {
+    "start": "node core/app.js",
+    "dev": "nodemon core/app.js",
+    "test": "echo \"No tests defined yet\" && exit 0"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "finance",
+    "tracker",
+    "analytics",
+    "nodejs"
+  ],
+  "author": "fermeradar",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.5",
+    "dotenv": "^16.3.1",
+    "grammY": "^1.19.2",
+    "i18next": "^23.5.0",
+    "mysql2": "^3.6.0",
+    "sequelize": "^6.35.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+>>>>>>> a3b27c4 (Push complete local project to GitHub)
 }
