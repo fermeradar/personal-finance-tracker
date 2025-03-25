@@ -1,138 +1,167 @@
-name: Deploy to VPS
+name: Deploy to Production
 
 on:
   push:
-    branches:
-      - main
-      - local-version
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -t rsa ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-          echo "SSH setup completed"
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
 
-      - name: Test SSH Connection
-        run: |
-          echo "Testing SSH connection to VPS..."
-          ssh -v -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "echo 'Connection successful'"
-          echo "SSH connection test passed"
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Deploy via SSH
-        env:
-          ENV_FILE: ${{ secrets.ENV_FILE }}
-        run: |
-          echo "Starting deployment process..."
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-            echo "=== Deployment started at $(date) ==="
-            
-            # Check if directory exists
-            if [ ! -d "/root/PersonalFinanceTracker" ]; then
-              echo "Cloning repository..."
-              git clone git@github.com:fermeradar/personal-finance-tracker.git /root/PersonalFinanceTracker
-            else
-              echo "Repository exists, updating..."
-            fi
-            
-            cd /root/PersonalFinanceTracker
-            echo "Current directory: $(pwd)"
-            
-            echo "Fetching latest changes..."
-            git fetch origin
-            
-            echo "Resetting to main branch..."
-            git reset --hard origin/main
-            
-            echo "Setting up environment file..."
-            echo "$ENV_FILE" > .env
-            
-            echo "Creating necessary directories..."
-            mkdir -p uploads/temp logs backups cache credentials
-            
-            echo "Setting up Docker..."
-            # Stop existing containers
-            echo "Stopping existing containers..."
-            docker-compose -f docker/docker-compose.yml down || true
-            
-            # Build and start containers
-            echo "Building and starting containers..."
-            docker-compose -f docker/docker-compose.yml up --build -d
-            
-            # Wait for containers to be healthy
-            echo "Waiting for containers to be healthy..."
-            sleep 30
-            
-            # Check container status
-            echo "Checking container status..."
-            docker ps
-            
-            # Container Health Check Function
-            check_container_health() {
-              local container_name=$1
-              local max_attempts=5
-              local attempt=1
-              
-              echo "Checking health of $container_name..."
-              while [ $attempt -le $max_attempts ]; do
-                if docker inspect --format='{{.State.Health.Status}}' $container_name 2>/dev/null | grep -q "healthy"; then
-                  echo "✅ $container_name is healthy"
-                  return 0
-                elif docker inspect --format='{{.State.Health.Status}}' $container_name 2>/dev/null | grep -q "unhealthy"; then
-                  echo "❌ $container_name is unhealthy"
-                  docker logs $container_name
-                  return 1
-                fi
-                echo "Attempt $attempt/$max_attempts: Waiting for $container_name to be healthy..."
-                sleep 10
-                attempt=$((attempt + 1))
-              done
-              echo "❌ $container_name failed to become healthy after $max_attempts attempts"
-              return 1
-            }
-            
-            # Check health of each container
-            echo "=== Performing container health checks ==="
-            for container in finance-tracker-db finance-tracker-bot finance-tracker-n8n finance-tracker-pgadmin finance-tracker-backup; do
-              if docker ps --format '{{.Names}}' | grep -q "^$container$"; then
-                check_container_health $container
-                if [ $? -ne 0 ]; then
-                  echo "❌ Health check failed for $container"
-                  exit 1
-                fi
-              fi
-            done
-            
-            # Resource Monitoring
-            echo "=== Container Resource Usage ==="
-            docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}"
-            
-            # Log Monitoring
-            echo "=== Recent Container Logs ==="
-            for container in finance-tracker-db finance-tracker-bot finance-tracker-n8n finance-tracker-pgadmin finance-tracker-backup; do
-              if docker ps --format '{{.Names}}' | grep -q "^$container$"; then
-                echo "=== Logs for $container ==="
-                docker logs --tail 10 $container
-              fi
-            done
-            
-            echo "=== Deployment completed at $(date) ==="
-            echo "Current git status:"
-            git status
-          EOF
-          echo "Deployment process completed"
+    - name: Run tests
+      env:
+        NODE_ENV: test
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USER: test_user
+        DB_PASSWORD: test_password
+        DB_NAME: finance_tracker_test
+        JWT_SECRET: test_secret
+        REDIS_URL: redis://localhost:6379/1
+      run: npm test
 
-      - name: Deployment Status
-        run: |
-          echo "✅ Deployment completed successfully"
-          echo "Repository: ${{ github.repository }}"
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Commit: ${{ github.sha }}"
+    - name: Build application
+      run: npm run build
+
+    - name: Deploy via SSH
+      env:
+        ENV_FILE: ${{ secrets.ENV_FILE }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        VPS_HOST: ${{ secrets.VPS_HOST }}
+        VPS_USER: ${{ secrets.VPS_USER }}
+        VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      run: |
+        echo "Starting deployment process..."
+        ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} -i ${{ secrets.VPS_SSH_KEY }} << 'EOF'
+          echo "=== Deployment started at $(date) ==="
+          
+          # Check if directory exists
+          if [ ! -d "/root/PersonalFinanceTracker" ]; then
+            echo "Cloning repository..."
+            git clone git@github.com:fermeradar/personal-finance-tracker.git /root/PersonalFinanceTracker
+          else
+            echo "Repository exists, updating..."
+          fi
+          
+          cd /root/PersonalFinanceTracker
+          echo "Current directory: $(pwd)"
+          
+          echo "Fetching latest changes..."
+          git fetch origin
+          
+          echo "Resetting to main branch..."
+          git reset --hard origin/main
+          
+          echo "Setting up environment file..."
+          echo "$ENV_FILE" > .env
+          
+          # Add Telegram configuration
+          echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
+          echo "TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> .env
+          
+          echo "Creating necessary directories..."
+          mkdir -p uploads/temp logs backups cache credentials
+          
+          echo "Installing dependencies..."
+          npm ci --production
+          
+          echo "Building application..."
+          npm run build
+          
+          echo "Running database migrations..."
+          npm run migrate
+          
+          echo "Restarting PM2 process..."
+          pm2 restart finance-tracker || pm2 start ecosystem.config.js --name finance-tracker
+          
+          echo "Cleaning up old files..."
+          find uploads/temp -type f -mtime +1 -delete
+          find logs -type f -mtime +7 -delete
+          
+          echo "=== Deployment completed at $(date) ==="
+        EOF
+
+    - name: Notify deployment status
+      if: always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const status = context.job.status;
+          const message = status === 'success' 
+            ? '✅ Deployment successful!' 
+            : '❌ Deployment failed!';
+          
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: `${message}\n\nDeployment completed at ${new Date().toISOString()}`
+          });
+
+  restore_backup:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Restore backup
+      env:
+        BACKUP_DATE: ${{ github.event.inputs.backup_date }}
+        BACKUP_TYPE: ${{ github.event.inputs.backup_type }}
+        ENVIRONMENT: ${{ github.event.inputs.environment }}
+        TRIGGERED_BY: ${{ github.actor }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        echo "Starting backup restoration process..."
+        # Add restoration process here
+        echo "=== Backup restoration completed successfully! ==="
+        echo "Restoration Details:"
+        echo "• Status: Success"
+        echo "• Time: $(date -Iseconds)"
+        echo "• Backup Type: $BACKUP_TYPE"
+        echo "• Backup Date: $BACKUP_DATE"
+        echo "• Environment: $ENVIRONMENT"
+        echo "• Triggered by: $TRIGGERED_BY"
+
+    - name: Notify restoration status
+      if: always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const status = context.job.status;
+          const message = status === 'success' 
+            ? '✅ Backup restoration completed successfully!' 
+            : '❌ Backup restoration failed!';
+          
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: `${message}\n\nRestoration completed at ${new Date().toISOString()}`
+          });

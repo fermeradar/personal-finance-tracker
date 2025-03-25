@@ -1,0 +1,162 @@
+name: Automated Backups
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Run daily at 2 AM UTC
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Create backup directory
+      run: mkdir -p backups
+
+    - name: Database Backup
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        BACKUP_PATH: ./backups/db_backup_$(date +%Y%m%d_%H%M%S).sql
+      run: |
+        echo "Starting database backup..."
+        pg_dump -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME > $BACKUP_PATH
+        echo "Database backup completed: $BACKUP_PATH"
+
+    - name: File Backup
+      env:
+        VPS_HOST: ${{ secrets.VPS_HOST }}
+        VPS_USER: ${{ secrets.VPS_USER }}
+        VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        BACKUP_PATH: ./backups/files_backup_$(date +%Y%m%d_%H%M%S).tar.gz
+      run: |
+        echo "Starting file backup..."
+        ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} -i ${{ secrets.VPS_SSH_KEY }} << 'EOF'
+          # Create backup of important directories
+          tar -czf /tmp/files_backup.tar.gz \
+            uploads/ \
+            logs/ \
+            config/ \
+            credentials/ \
+            --exclude='uploads/temp/*' \
+            --exclude='logs/*.log' \
+            --exclude='node_modules' \
+            --exclude='.git'
+          
+          # Copy backup to local machine
+          scp /tmp/files_backup.tar.gz ${{ github.workspace }}/$BACKUP_PATH
+          
+          # Cleanup temporary backup
+          rm /tmp/files_backup.tar.gz
+        EOF
+        echo "File backup completed: $BACKUP_PATH"
+
+    - name: Upload to S3
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      run: |
+        echo "Uploading backups to S3..."
+        aws s3 cp ./backups/ s3://$S3_BUCKET/backups/$(date +%Y/%m/%d)/ --recursive
+        echo "Backups uploaded to S3"
+
+    - name: Cleanup old backups
+      run: |
+        echo "Cleaning up old backups..."
+        # Keep last 7 days of backups
+        find ./backups -type f -mtime +7 -delete
+        echo "Cleanup completed"
+
+    - name: Verify backup integrity
+      run: |
+        echo "Verifying backup integrity..."
+        for backup in ./backups/*.sql; do
+          if [ -f "$backup" ]; then
+            echo "Verifying $backup..."
+            pg_restore -l "$backup" > /dev/null
+            if [ $? -eq 0 ]; then
+              echo "✅ $backup is valid"
+            else
+              echo "❌ $backup is invalid"
+              exit 1
+            fi
+          fi
+        done
+        echo "Backup verification completed"
+
+    - name: Send backup status notification
+      if: always()
+      uses: actions/github-script@v6
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      with:
+        script: |
+          const status = context.job.status;
+          const backupFiles = process.env.BACKUP_FILES || 'No backup files';
+          const backupSize = process.env.BACKUP_SIZE || '0';
+          
+          const message = status === 'success'
+            ? `✅ Backup completed successfully!\n\n`
+            : `❌ Backup failed!\n\n`;
+          
+          const details = `
+          Backup Details:
+          • Status: ${status === 'success' ? 'Success' : 'Failed'}
+          • Time: ${new Date().toISOString()}
+          • Files: ${backupFiles}
+          • Size: ${backupSize}
+          • Environment: Production
+          `;
+          
+          // Send to Telegram
+          await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              chat_id: process.env.TELEGRAM_CHAT_ID,
+              text: message + details,
+              parse_mode: 'HTML'
+            })
+          });
+          
+          // Add comment to PR if this was triggered by a PR
+          if (context.eventName === 'pull_request') {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: message + details
+            });
+          }
+
+    - name: Monitor backup size
+      run: |
+        echo "Checking backup size..."
+        BACKUP_SIZE=$(du -sh ./backups | cut -f1)
+        echo "BACKUP_SIZE=$BACKUP_SIZE" >> $GITHUB_ENV
+        
+        # Alert if backup size exceeds threshold (e.g., 10GB)
+        if [ $(du -s ./backups | cut -f1) -gt 10485760 ]; then
+          echo "⚠️ Backup size exceeds 10GB threshold"
+          exit 1
+        fi 

@@ -1,0 +1,200 @@
+name: Restore Backup
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_date:
+        description: 'Backup date (YYYY-MM-DD)'
+        required: true
+        type: string
+        pattern: '^\d{4}-\d{2}-\d{2}$'
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      backup_type:
+        description: 'Type of backup to restore'
+        required: true
+        type: choice
+        options:
+          - database
+          - files
+          - both
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Create restore directory
+      run: mkdir -p restore
+
+    - name: Download from S3
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        BACKUP_DATE: ${{ github.event.inputs.backup_date }}
+      run: |
+        echo "Downloading backups from S3..."
+        aws s3 cp s3://$S3_BUCKET/backups/$BACKUP_DATE/ ./restore/ --recursive
+        echo "Backups downloaded successfully"
+
+    - name: Verify backup files
+      run: |
+        echo "Verifying backup files..."
+        if [ "${{ github.event.inputs.backup_type }}" = "database" ] || [ "${{ github.event.inputs.backup_type }}" = "both" ]; then
+          for backup in ./restore/*.sql; do
+            if [ -f "$backup" ]; then
+              echo "Verifying $backup..."
+              pg_restore -l "$backup" > /dev/null
+              if [ $? -eq 0 ]; then
+                echo "✅ $backup is valid"
+              else
+                echo "❌ $backup is invalid"
+                exit 1
+              fi
+            fi
+          done
+        fi
+
+    - name: Restore Database
+      if: github.event.inputs.backup_type == 'database' || github.event.inputs.backup_type == 'both'
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+      run: |
+        echo "Starting database restoration..."
+        for backup in ./restore/*.sql; do
+          if [ -f "$backup" ]; then
+            echo "Restoring $backup..."
+            pg_restore -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME "$backup"
+            if [ $? -eq 0 ]; then
+              echo "✅ Database restored successfully"
+            else
+              echo "❌ Database restoration failed"
+              exit 1
+            fi
+          fi
+        done
+
+    - name: Restore Files
+      if: github.event.inputs.backup_type == 'files' || github.event.inputs.backup_type == 'both'
+      env:
+        VPS_HOST: ${{ secrets.VPS_HOST }}
+        VPS_USER: ${{ secrets.VPS_USER }}
+        VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      run: |
+        echo "Starting file restoration..."
+        for backup in ./restore/*.tar.gz; do
+          if [ -f "$backup" ]; then
+            echo "Restoring $backup..."
+            scp "$backup" ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/
+            ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} -i ${{ secrets.VPS_SSH_KEY }} << 'EOF'
+              # Stop the application
+              pm2 stop finance-tracker
+              
+              # Extract backup
+              tar -xzf /tmp/files_backup.tar.gz -C /root/PersonalFinanceTracker/
+              
+              # Set correct permissions
+              chown -R root:root /root/PersonalFinanceTracker/
+              chmod -R 755 /root/PersonalFinanceTracker/
+              
+              # Cleanup
+              rm /tmp/files_backup.tar.gz
+              
+              # Start the application
+              pm2 start finance-tracker
+            EOF
+            if [ $? -eq 0 ]; then
+              echo "✅ Files restored successfully"
+            else
+              echo "❌ File restoration failed"
+              exit 1
+            fi
+          fi
+        done
+
+    - name: Verify restoration
+      run: |
+        echo "Verifying restoration..."
+        if [ "${{ github.event.inputs.backup_type }}" = "database" ] || [ "${{ github.event.inputs.backup_type }}" = "both" ]; then
+          # Check database connection and basic queries
+          psql -h ${{ secrets.DB_HOST }} -p ${{ secrets.DB_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -c "SELECT COUNT(*) FROM users;"
+        fi
+        
+        if [ "${{ github.event.inputs.backup_type }}" = "files" ] || [ "${{ github.event.inputs.backup_type }}" = "both" ]; then
+          # Check if critical files exist
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} -i ${{ secrets.VPS_SSH_KEY }} << 'EOF'
+            test -f /root/PersonalFinanceTracker/.env && echo "✅ .env exists" || echo "❌ .env missing"
+            test -d /root/PersonalFinanceTracker/uploads && echo "✅ uploads directory exists" || echo "❌ uploads directory missing"
+            test -d /root/PersonalFinanceTracker/config && echo "✅ config directory exists" || echo "❌ config directory missing"
+          EOF
+        fi
+
+    - name: Send restoration status notification
+      if: always()
+      uses: actions/github-script@v6
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      with:
+        script: |
+          const status = context.job.status;
+          const backupType = process.env.BACKUP_TYPE;
+          const backupDate = process.env.BACKUP_DATE;
+          const environment = process.env.ENVIRONMENT;
+          
+          const message = status === 'success'
+            ? `✅ Backup restoration completed successfully!\n\n`
+            : `❌ Backup restoration failed!\n\n`;
+          
+          const details = `
+          Restoration Details:
+          • Status: ${status === 'success' ? 'Success' : 'Failed'}
+          • Time: ${new Date().toISOString()}
+          • Backup Type: ${backupType}
+          • Backup Date: ${backupDate}
+          • Environment: ${environment}
+          • Triggered by: ${context.actor}
+          `;
+          
+          // Send to Telegram
+          await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              chat_id: process.env.TELEGRAM_CHAT_ID,
+              text: message + details,
+              parse_mode: 'HTML'
+            })
+          });
+
+    - name: Cleanup
+      if: always()
+      run: |
+        echo "Cleaning up temporary files..."
+        rm -rf ./restore
+        echo "Cleanup completed" 
