@@ -803,14 +803,14 @@ function formatInsights(insights, language) {
  */
 function getCurrencySymbol(currency) {
   const symbols = {
-    'USD': ',
+    'USD': '$',
     'EUR': '€',
     'GBP': '£',
     'RUB': '₽',
     'JPY': '¥',
     'CNY': '¥',
     'CHF': 'CHF',
-    'CAD': 'C
+    'CAD': 'C$'
   };
   
   return symbols[currency] || currency;
