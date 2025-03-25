@@ -21,8 +21,19 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Clean install dependencies
+        run: |
+          echo "Cleaning npm cache..."
+          npm cache clean --force
+          
+          echo "Removing existing node_modules and package-lock.json..."
+          rm -rf node_modules package-lock.json
+          
+          echo "Installing dependencies..."
+          npm install
+          
+          echo "Verifying installation..."
+          npm list --depth=0
 
       - name: Run tests
         run: npm test
