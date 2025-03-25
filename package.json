@@ -34,8 +34,8 @@
     "express-jwt": "^8.4.1",
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
+    "grammy": "^1.21.1",
     "helmet": "^7.1.0",
-    "node-telegram-bot-api": "^0.63.0",
     "pg": "^8.11.3",
     "winston": "^3.11.0"
   },
