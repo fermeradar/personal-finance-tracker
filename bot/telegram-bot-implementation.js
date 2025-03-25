@@ -26,11 +26,12 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 bot.use(session());
 
 // Import scenes
-const addExpenseScene = require('./scenes/addExpenseScene');
+const addExpenseScene = require('./scenes/add-expense-scene');
 const viewExpensesScene = require('./scenes/viewExpensesScene');
-const settingsScene = require('./scenes/settingsScene');
-const receiptProcessingScene = require('./scenes/receiptProcessingScene');
+const settingsScene = require('./scenes/settings-scene');
+const receiptProcessingScene = require('./scenes/receipt-processing-scene');
 const utilityBillScene = require('./scenes/utilityBillScene');
+const benchmarkScene = require('./scenes/benchmark-scene');
 
 // Create scene manager
 const stage = new Scenes.Stage([
@@ -38,7 +39,8 @@ const stage = new Scenes.Stage([
   viewExpensesScene,
   settingsScene,
   receiptProcessingScene,
-  utilityBillScene
+  utilityBillScene,
+  benchmarkScene
 ]);
 bot.use(stage.middleware());
 

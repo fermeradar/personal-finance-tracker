@@ -52,8 +52,8 @@ bot.use(loggingMiddleware);
 bot.use(stage.middleware());
 
 // Import command handlers
-const expenseHandlers = require('./handlers/expenseManagementHandlers');
-const adminHandlers = require('./handlers/adminHandlers');
+const expenseHandlers = require('./handlers/expense-management-handlers');
+const adminHandlers = require('./handlers/admin-handlers');
 
 // Check database connection
 async function checkDatabase() {
