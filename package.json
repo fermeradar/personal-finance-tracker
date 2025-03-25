@@ -12,7 +12,9 @@
     "lint:fix": "eslint . --fix",
     "migrate": "node scripts/migrate.js",
     "clean": "rm -rf node_modules package-lock.json",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "verify-deps": "./scripts/verify-deps.sh",
+    "prepush": "npm run verify-deps"
   },
   "keywords": [
     "telegram",
