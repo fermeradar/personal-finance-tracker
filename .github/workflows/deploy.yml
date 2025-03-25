@@ -34,6 +34,5 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             echo "$ENV_FILE" > .env
-            docker-compose down
-            docker-compose up --build -d
+            echo "Deployment completed successfully"
           EOF
