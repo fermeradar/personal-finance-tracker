@@ -155,6 +155,7 @@ jobs:
       with:
         args: >
           -Dsonar.projectKey=personal-finance-tracker
+          -Dsonar.organization=fermeradar
           -Dsonar.sources=src
           -Dsonar.tests=tests
           -Dsonar.test.inclusions=tests/**/*.test.js
