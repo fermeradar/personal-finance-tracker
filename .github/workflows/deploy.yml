@@ -164,7 +164,7 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Clean install dependencies
+      - name: Install dependencies
         run: |
           echo "Cleaning npm cache..."
           npm cache clean --force
