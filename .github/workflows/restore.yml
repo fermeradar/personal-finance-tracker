@@ -39,7 +39,24 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: npm ci
+      run: |
+        echo "Cleaning npm cache..."
+        npm cache clean --force
+        
+        echo "Removing existing node_modules and package-lock.json..."
+        rm -rf node_modules package-lock.json
+        
+        echo "Installing dependencies..."
+        npm install --no-audit --no-fund --legacy-peer-deps
+        
+        echo "Verifying installation..."
+        npm list --depth=0 || true
+        
+        echo "Checking for missing dependencies..."
+        if [ ! -f "package-lock.json" ]; then
+          echo "Error: package-lock.json was not generated"
+          exit 1
+        fi
 
     - name: Create restore directory
       run: mkdir -p restore
