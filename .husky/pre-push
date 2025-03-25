@@ -1,4 +1,11 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/usr/bin/env node
 
-npm run verify-deps || exit 1
+import { execSync } from 'child_process';
+
+try {
+  console.log('Running dependency verification...');
+  execSync('npm run verify-deps', { stdio: 'inherit' });
+} catch (error) {
+  console.error('Dependency verification failed');
+  process.exit(1);
+}

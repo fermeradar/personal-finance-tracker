@@ -12,7 +12,7 @@
     "lint:fix": "eslint . --fix",
     "migrate": "node scripts/migrate.js",
     "clean": "rm -rf node_modules package-lock.json",
-    "prepare": "husky install",
+    "prepare": "husky",
     "verify-deps": "./scripts/verify-deps.sh",
     "prepush": "npm run verify-deps"
   },
@@ -66,15 +66,18 @@
     ],
     "reporters": [
       "default",
-      ["jest-junit", {
-        "outputDirectory": "test-results",
-        "outputName": "junit.xml",
-        "ancestorSeparator": " › ",
-        "uniqueOutputName": "false",
-        "suiteNameTemplate": "{filepath}",
-        "classNameTemplate": "{classname}",
-        "titleTemplate": "{title}"
-      }]
+      [
+        "jest-junit",
+        {
+          "outputDirectory": "test-results",
+          "outputName": "junit.xml",
+          "ancestorSeparator": " › ",
+          "uniqueOutputName": "false",
+          "suiteNameTemplate": "{filepath}",
+          "classNameTemplate": "{classname}",
+          "titleTemplate": "{title}"
+        }
+      ]
     ]
   }
 }
