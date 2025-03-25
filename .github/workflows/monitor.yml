@@ -1,0 +1,234 @@
+name: Container Monitoring
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Run every 5 minutes
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Monitor Containers
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            # Function to check container health
+            check_container_health() {
+              local container_name=$1
+              local health_status=$(docker inspect --format='{{.State.Health.Status}}' $container_name 2>/dev/null)
+              local container_status=$(docker inspect --format='{{.State.Status}}' $container_name 2>/dev/null)
+              
+              if [ "$health_status" = "unhealthy" ] || [ "$container_status" != "running" ]; then
+                echo "❌ $container_name is unhealthy or not running"
+                echo "Health Status: $health_status"
+                echo "Container Status: $container_status"
+                echo "Last 20 lines of logs:"
+                docker logs --tail 20 $container_name
+                return 1
+              fi
+              return 0
+            }
+
+            # Function to check resource usage
+            check_resource_usage() {
+              local container_name=$1
+              local cpu_usage=$(docker stats --no-stream --format "{{.CPUPerc}}" $container_name | sed 's/%//')
+              local mem_usage=$(docker stats --no-stream --format "{{.MemUsage}}" $container_name)
+              
+              if (( $(echo "$cpu_usage > 80" | bc -l) )); then
+                echo "⚠️ High CPU usage detected for $container_name: ${cpu_usage}%"
+                return 1
+              fi
+              
+              # Extract memory usage percentage
+              local mem_percent=$(echo $mem_usage | grep -oP '\d+(?=%)')
+              if (( $(echo "$mem_percent > 80" | bc -l) )); then
+                echo "⚠️ High memory usage detected for $container_name: $mem_usage"
+                return 1
+              fi
+              
+              return 0
+            }
+
+            # Function to check disk space
+            check_disk_space() {
+              local disk_usage=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
+              if (( $(echo "$disk_usage > 80" | bc -l) )); then
+                echo "⚠️ High disk usage detected: ${disk_usage}%"
+                df -h /
+                return 1
+              fi
+              return 0
+            }
+
+            # Function to send Telegram notification
+            send_telegram_notification() {
+              local message="$1"
+              local bot_token="${{ secrets.TELEGRAM_BOT_TOKEN }}"
+              local chat_id="${{ secrets.TELEGRAM_CHAT_ID }}"
+              local api_url="https://api.telegram.org/bot${bot_token}/sendMessage"
+              
+              # Format message for Telegram
+              local formatted_message="<b>🚨 Container Monitoring Alert</b>\n\n"
+              formatted_message+="<b>Time:</b> $(date)\n"
+              formatted_message+="<b>Repository:</b> ${{ github.repository }}\n"
+              formatted_message+="<b>Branch:</b> ${{ github.ref_name }}\n\n"
+              formatted_message+="$message"
+              
+              # Send message to Telegram
+              curl -s -X POST "$api_url" \
+                -H "Content-Type: application/json" \
+                -d "{\"chat_id\": \"$chat_id\", \"text\": \"$formatted_message\", \"parse_mode\": \"HTML\"}" > /dev/null
+            }
+
+            # Function to send resolution notification
+            send_resolution_notification() {
+              local message="$1"
+              local bot_token="${{ secrets.TELEGRAM_BOT_TOKEN }}"
+              local chat_id="${{ secrets.TELEGRAM_CHAT_ID }}"
+              local api_url="https://api.telegram.org/bot${bot_token}/sendMessage"
+              
+              # Format message for Telegram
+              local formatted_message="<b>✅ Issue Resolved</b>\n\n"
+              formatted_message+="<b>Time:</b> $(date)\n"
+              formatted_message+="<b>Repository:</b> ${{ github.repository }}\n"
+              formatted_message+="<b>Branch:</b> ${{ github.ref_name }}\n\n"
+              formatted_message+="$message"
+              
+              # Send message to Telegram
+              curl -s -X POST "$api_url" \
+                -H "Content-Type: application/json" \
+                -d "{\"chat_id\": \"$chat_id\", \"text\": \"$formatted_message\", \"parse_mode\": \"HTML\"}" > /dev/null
+            }
+
+            # Function to save state
+            save_state() {
+              local state_file="/root/PersonalFinanceTracker/.monitoring_state"
+              echo "$1" > "$state_file"
+            }
+
+            # Function to load state
+            load_state() {
+              local state_file="/root/PersonalFinanceTracker/.monitoring_state"
+              if [ -f "$state_file" ]; then
+                cat "$state_file"
+              else
+                echo "{}"
+              fi
+            }
+
+            # Main monitoring logic
+            cd /root/PersonalFinanceTracker
+            
+            # Load previous state
+            previous_state=$(load_state)
+            current_state="{}"
+            issues_found=false
+            alert_message=""
+            detailed_alert=""
+            resolution_message=""
+            detailed_resolution=""
+
+            # Check each container
+            for container in finance-tracker-db finance-tracker-bot finance-tracker-n8n finance-tracker-pgadmin finance-tracker-backup; do
+              if docker ps --format '{{.Names}}' | grep -q "^$container$"; then
+                echo "Checking $container..."
+                container_status=""
+                container_issues=()
+                
+                # Health check
+                if ! check_container_health $container; then
+                  container_issues+=("health")
+                  container_status+="❌ Container is unhealthy or not running\n"
+                  alert_message+="\nContainer $container is unhealthy or not running"
+                fi
+                
+                # Resource usage check
+                if ! check_resource_usage $container; then
+                  container_issues+=("resources")
+                  container_status+="⚠️ Resource usage issues detected\n"
+                  alert_message+="\nResource usage issues detected for $container"
+                fi
+                
+                # Check if issues have changed
+                previous_issues=$(echo "$previous_state" | jq -r ".containers.$container.issues[]" 2>/dev/null || echo "")
+                if [ "${#container_issues[@]}" -gt 0 ]; then
+                  # New issues found
+                  if [ -z "$previous_issues" ]; then
+                    detailed_alert+="\n<b>=== $container ===</b>\n"
+                    detailed_alert+="$container_status\n"
+                    detailed_alert+="<b>CPU Usage:</b> $(docker stats --no-stream --format "{{.CPUPerc}}" $container)\n"
+                    detailed_alert+="<b>Memory Usage:</b> $(docker stats --no-stream --format "{{.MemUsage}}" $container)\n"
+                    detailed_alert+="<b>Last 10 lines of logs:</b>\n"
+                    detailed_alert+="<code>$(docker logs --tail 10 $container)</code>\n"
+                    detailed_alert+="-------------------\n"
+                    issues_found=true
+                  fi
+                else
+                  # Issues resolved
+                  if [ ! -z "$previous_issues" ]; then
+                    detailed_resolution+="\n<b>=== $container ===</b>\n"
+                    detailed_resolution+="✅ All issues resolved\n"
+                    detailed_resolution+="<b>Current Status:</b>\n"
+                    detailed_resolution+="CPU Usage: $(docker stats --no-stream --format "{{.CPUPerc}}" $container)\n"
+                    detailed_resolution+="Memory Usage: $(docker stats --no-stream --format "{{.MemUsage}}" $container)\n"
+                    detailed_resolution+="-------------------\n"
+                    resolution_message+="\nIssues resolved for container $container"
+                  fi
+                fi
+                
+                # Update current state
+                current_state=$(echo "$current_state" | jq --arg container "$container" --argjson issues "$(echo "${container_issues[@]}" | jq -R . | jq -s .)" '.containers[$container] = {"issues": $issues}')
+              fi
+            done
+
+            # Check disk space
+            if ! check_disk_space; then
+              previous_disk_issue=$(echo "$previous_state" | jq -r ".disk.issue" 2>/dev/null || echo "")
+              if [ -z "$previous_disk_issue" ]; then
+                detailed_alert+="\n<b>=== Disk Space ===</b>\n"
+                detailed_alert+="<code>$(df -h /)</code>\n"
+                detailed_alert+="-------------------\n"
+                issues_found=true
+                current_state=$(echo "$current_state" | jq '.disk.issue = "high_usage"')
+              fi
+            else
+              previous_disk_issue=$(echo "$previous_state" | jq -r ".disk.issue" 2>/dev/null || echo "")
+              if [ ! -z "$previous_disk_issue" ]; then
+                detailed_resolution+="\n<b>=== Disk Space ===</b>\n"
+                detailed_resolution+="✅ Disk usage is now normal\n"
+                detailed_resolution+="<code>$(df -h /)</code>\n"
+                detailed_resolution+="-------------------\n"
+                resolution_message+="\nDisk space issues resolved"
+                current_state=$(echo "$current_state" | jq '.disk.issue = null')
+              fi
+            fi
+
+            # Save current state
+            save_state "$current_state"
+
+            # Send notifications if there are changes
+            if [ "$issues_found" = true ]; then
+              echo "New issues detected! Sending Telegram notification..."
+              send_telegram_notification "$detailed_alert"
+            fi
+
+            if [ ! -z "$resolution_message" ]; then
+              echo "Issues resolved! Sending resolution notification..."
+              send_resolution_notification "$detailed_resolution"
+            fi
+          EOF
+
+      - name: Report Status
+        if: always()
+        run: |
+          echo "Monitoring check completed at $(date)"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref_name }}" 
