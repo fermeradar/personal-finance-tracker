@@ -27,6 +27,7 @@ jobs:
             cd /root/PersonalFinanceTracker || git clone git@github.com:fermeradar/personal-finance-tracker.git /root/PersonalFinanceTracker;
             cd /root/PersonalFinanceTracker;
             git pull;
+	    echo "${{ secrets.ENV_FILE }}" > /root/PersonalFinanceTracker/.env
             docker-compose down;
             docker-compose up --build -d
           '
