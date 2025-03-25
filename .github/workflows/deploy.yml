@@ -20,7 +20,18 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          echo "Cleaning npm cache..."
+          npm cache clean --force
+          
+          echo "Removing existing node_modules and package-lock.json..."
+          rm -rf node_modules package-lock.json
+          
+          echo "Installing dependencies..."
+          npm install
+          
+          echo "Verifying installation..."
+          npm list --depth=0
 
       - name: Run SonarQube analysis
         uses: sonarsource/sonarqube-scan-action@master
@@ -48,7 +59,18 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          echo "Cleaning npm cache..."
+          npm cache clean --force
+          
+          echo "Removing existing node_modules and package-lock.json..."
+          rm -rf node_modules package-lock.json
+          
+          echo "Installing dependencies..."
+          npm install
+          
+          echo "Verifying installation..."
+          npm list --depth=0
 
       - name: Run security audit
         run: |
@@ -69,7 +91,18 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          echo "Cleaning npm cache..."
+          npm cache clean --force
+          
+          echo "Removing existing node_modules and package-lock.json..."
+          rm -rf node_modules package-lock.json
+          
+          echo "Installing dependencies..."
+          npm install
+          
+          echo "Verifying installation..."
+          npm list --depth=0
 
       - name: Run linting
         run: npm run lint
