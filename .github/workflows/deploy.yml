@@ -28,7 +28,7 @@ jobs:
           rm -rf node_modules package-lock.json
           
           echo "Installing dependencies..."
-          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund --legacy-peer-deps
           
           echo "Verifying installation..."
           npm list --depth=0 || true
@@ -73,7 +73,7 @@ jobs:
           rm -rf node_modules package-lock.json
           
           echo "Installing dependencies..."
-          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund --legacy-peer-deps
           
           echo "Verifying installation..."
           npm list --depth=0 || true
@@ -111,7 +111,7 @@ jobs:
           rm -rf node_modules package-lock.json
           
           echo "Installing dependencies..."
-          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund --legacy-peer-deps
           
           echo "Verifying installation..."
           npm list --depth=0 || true
@@ -160,7 +160,7 @@ jobs:
           rm -rf node_modules package-lock.json
           
           echo "Installing dependencies..."
-          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund --legacy-peer-deps
           
           echo "Verifying installation..."
           npm list --depth=0 || true
