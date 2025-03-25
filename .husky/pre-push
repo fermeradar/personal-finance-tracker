@@ -1,11 +1,4 @@
-#!/usr/bin/env node
+#!/bin/sh
 
-import { execSync } from 'child_process';
-
-try {
-  console.log('Running dependency verification...');
-  execSync('npm run verify-deps', { stdio: 'inherit' });
-} catch (error) {
-  console.error('Dependency verification failed');
-  process.exit(1);
-}
+echo "Running dependency verification..."
+npm run verify-deps || exit 1
