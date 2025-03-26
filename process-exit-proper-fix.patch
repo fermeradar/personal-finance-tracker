@@ -1,0 +1,22 @@
+--- a/core/app.js
++++ b/core/app.js
+@@ -265,7 +265,8 @@
+   try {
+     await initializeApp();
+   } catch (error) {
+-    process.exit(1);
++    logger.error('Failed to initialize app:', error);
++    throw error;
+   }
+ }
+
+--- a/scripts/cleanup.js
++++ b/scripts/cleanup.js
+@@ -52,8 +52,8 @@
+     logger.info('Cleanup completed successfully');
+   } catch (error) {
+     logger.error('Cleanup failed:', error);
+-    process.exit(1);
++    throw new Error('Cleanup failed: ' + error.message);
+   }
+ }

@@ -1,10 +1,18 @@
-@@ -4,7 +4,7 @@
- const { pool } = require('../config/database');
- const logger = require('../core/logger-utility');
- const { validateAdmin } = require('../core/security-middleware');
--const fs = require('fs');
-+const _fs = require('fs');
+@@ -108,7 +108,7 @@
+ async function handleAdminCommand(ctx) {
+   try {
+     if (!await validateAdmin(ctx.from.id)) {
+-      console.log('Unauthorized admin access attempt');
++      logger.warn('Unauthorized admin access attempt');
+       return ctx.reply('Unauthorized');
+     }
+     // ... rest of the code
+@@ -160,7 +160,7 @@
  
- // ... existing code ...
--async function handleBulkDelete(ctx, expenses, index) {
-+async function handleBulkDelete(ctx, expenses, _index) {
+ async function handleBulkOperation(ctx) {
+   try {
+-    console.log('Starting bulk operation');
++    logger.info('Starting bulk operation');
+     // ... rest of the code
+   } catch (error) {
+     logger.error('Bulk operation failed:', error);

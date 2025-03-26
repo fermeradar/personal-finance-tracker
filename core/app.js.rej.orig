@@ -1,9 +1,8 @@
-@@ -265,7 +265,8 @@
+@@ -265,7 +265,7 @@
    try {
      await initializeApp();
    } catch (error) {
 -    process.exit(1);
-+    logger.error('Failed to initialize app:', error);
 +    throw error;
    }
  }

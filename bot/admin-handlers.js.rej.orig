@@ -1,0 +1,10 @@
+@@ -4,7 +4,7 @@
+ const { pool } = require('../config/database');
+ const logger = require('../core/logger-utility');
+ const { validateAdmin } = require('../core/security-middleware');
+-const fs = require('fs');
++const _fs = require('fs');
+ 
+ // ... existing code ...
+-async function handleBulkDelete(ctx, expenses, index) {
++async function handleBulkDelete(ctx, expenses, _index) {
