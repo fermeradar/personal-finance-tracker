@@ -1,0 +1,25 @@
+--- a/bot/scenes/benchmark-scene.js
++++ b/bot/scenes/benchmark-scene.js
+@@ -664,9 +664,8 @@
+     switch (action) {
+       case 'compare':
+-        {
+-          let comparisonData = await getComparisonData(ctx);
+-          // Rest of the code
+-        }
++        const comparisonData = await getComparisonData(ctx);
++        // Rest of the code
++        break;
+
+--- a/bot/telegram-bot-command-handlers.js
++++ b/bot/telegram-bot-command-handlers.js
+@@ -382,10 +382,9 @@
+     switch (command) {
+       case 'start':
+-        {
+-          let userData = await getUserData(ctx);
+-          // Rest of the code
+-        }
++        const userData = await getUserData(ctx);
++        // Rest of the code
++        break;
