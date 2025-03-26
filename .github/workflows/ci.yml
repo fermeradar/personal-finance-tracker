@@ -2,9 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    types: [opened, synchronize, reopened]
 
 jobs:
   test:
@@ -168,4 +169,17 @@ jobs:
       run: npm run check-deps
     
     - name: Run bundle size check
-      run: npm run check-bundle-size 
+      run: npm run check-bundle-size
+
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io 
