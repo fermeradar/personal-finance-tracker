@@ -1,0 +1,34 @@
+--- a/bot/admin-handlers.js
++++ b/bot/admin-handlers.js
+@@ -1,4 +1,5 @@
+ const logger = require('../core/logger');
++
+@@ -110,7 +111,7 @@
+-    console.log('Admin command received:', command);
++    logger.info('Admin command received:', { command });
+
+@@ -162,7 +163,7 @@
+-    console.log('Error in admin handler:', error);
++    logger.error('Error in admin handler:', { error });
+
+--- a/bot/telegram-bot-command-handlers.js
++++ b/bot/telegram-bot-command-handlers.js
+@@ -1,4 +1,5 @@
+ const logger = require('../core/logger');
++
+@@ -74,7 +75,7 @@
+-    console.log('Command received:', command);
++    logger.info('Command received:', { command });
+
+@@ -129,7 +130,7 @@
+-    console.log('Error in command handler:', error);
++    logger.error('Error in command handler:', { error });
+
+--- a/src/utils/errors.js
++++ b/src/utils/errors.js
+@@ -1,4 +1,5 @@
+ const logger = require('./logger');
++
+@@ -81,7 +82,7 @@
+-    console.log('Error:', error);
++    logger.error('Unhandled error:', { error });

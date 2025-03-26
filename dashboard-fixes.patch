@@ -1,0 +1,5 @@
+--- a/src/routes/dashboard.js
++++ b/src/routes/dashboard.js
+@@ -1547,7 +1548,7 @@
+-    description: "User's preferred currency symbol (e.g. $, €, £, ¥)",
++    description: "User's preferred currency symbol (e.g. $, EUR, GBP, JPY)",
