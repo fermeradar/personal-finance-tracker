@@ -5,19 +5,24 @@ module.exports = {
     jest: true
   },
   extends: [
-    'eslint:recommended',
-    'plugin:node/recommended'
+    'eslint:recommended'
   ],
   parserOptions: {
-    ecmaVersion: 12,
+    ecmaVersion: 'latest',
     sourceType: 'module'
   },
   rules: {
-    'node/no-unsupported-features/es-syntax': ['error', { ignores: ['modules'] }],
-    'node/no-missing-import': 'off',
     'no-console': 'warn',
-    'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-    'node/no-unpublished-import': 'off',
-    'node/no-unpublished-require': 'off'
+    'no-unused-vars': ['error', { 
+      'argsIgnorePattern': '^_',
+      'varsIgnorePattern': '^_'
+    }],
+    'no-process-exit': 'warn'
+  },
+  globals: {
+    'require': 'readonly',
+    'module': 'readonly',
+    '__dirname': 'readonly',
+    'process': 'readonly'
   }
-}; 
+};

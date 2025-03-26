@@ -8,13 +8,15 @@
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "test": "jest --coverage",
-    "lint": "eslint .",
+    "lint": "eslint . --fix",
     "lint:fix": "eslint . --fix",
     "migrate": "node scripts/migrate.js",
     "clean": "rm -rf node_modules package-lock.json",
     "prepare": "husky",
     "verify-deps": "./scripts/verify-deps.sh",
-    "prepush": "npm run verify-deps"
+    "prepush": "npm run verify-deps",
+    "check-deps": "npm audit",
+    "lint:check": "eslint ."
   },
   "keywords": [
     "telegram",
