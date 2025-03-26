@@ -1,0 +1,25 @@
+--- a/core/app.js
++++ b/core/app.js
+@@ -267,7 +267,7 @@
+   } catch (error) {
+     logger.error('Failed to initialize database:', error);
+-    process.exit(1);
++    throw new Error('Database initialization failed');
+   }
+ }
+
+@@ -326,7 +326,7 @@
+   } catch (error) {
+     logger.error('Failed to start server:', error);
+-    process.exit(1);
++    throw new Error('Server startup failed');
+   }
+ }
+
+@@ -331,7 +331,7 @@
+   } catch (error) {
+     logger.error('Unhandled error:', error);
+-    process.exit(1);
++    throw error;
+   }
+ }
