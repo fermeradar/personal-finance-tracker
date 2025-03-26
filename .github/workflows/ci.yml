@@ -26,13 +26,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-
+    
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
         cache: 'npm'
-
+    
     - name: Install dependencies
       run: |
         echo "Cleaning npm cache..."
@@ -52,13 +52,13 @@ jobs:
           echo "Error: package-lock.json was not generated"
           exit 1
         fi
-
+    
     - name: Run linting
       run: npm run lint
-
+    
     - name: Run type checking
       run: npm run type-check
-
+    
     - name: Run tests
       env:
         NODE_ENV: test
@@ -70,7 +70,7 @@ jobs:
         JWT_SECRET: test_secret
         REDIS_URL: redis://localhost:6379
       run: npm test
-
+    
     - name: Upload test coverage
       uses: codecov/codecov-action@v3
       with:
@@ -88,7 +88,7 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-
+    
     - name: Install dependencies
       run: |
         echo "Cleaning npm cache..."
@@ -108,10 +108,10 @@ jobs:
           echo "Error: package-lock.json was not generated"
           exit 1
         fi
-
+    
     - name: Run security audit
       run: npm audit
-
+    
     - name: Run Snyk security scan
       uses: snyk/actions/node@master
       env:
@@ -127,7 +127,7 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-
+    
     - name: Install dependencies
       run: |
         echo "Cleaning npm cache..."
@@ -147,23 +147,25 @@ jobs:
           echo "Error: package-lock.json was not generated"
           exit 1
         fi
-
+    
     - name: Run SonarQube analysis
       uses: sonarsource/sonarqube-scan-action@master
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: https://sonarcloud.io
       with:
         args: >
-          -Dsonar.projectKey=personal-finance-tracker
+          -Dsonar.projectKey=fermeradar_personal-finance-tracker
           -Dsonar.organization=fermeradar
+          -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.sources=src
           -Dsonar.tests=tests
           -Dsonar.test.inclusions=tests/**/*.test.js
           -Dsonar.javascript.lcov.reportPaths=coverage/lcov-report/lcov.info
           -Dsonar.coverage.exclusions=tests/**/*,config/**/*,scripts/**/*
-
+    
     - name: Run dependency check
       run: npm run check-deps
-
+    
     - name: Run bundle size check
       run: npm run check-bundle-size 
