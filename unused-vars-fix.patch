@@ -1,51 +1,46 @@
---- a/bot/telegram-bot-implementation.js
-+++ b/bot/telegram-bot-implementation.js
-@@ -2,17 +2,17 @@
- const { Telegraf } = require('telegraf');
- const config = require('../config');
- const logger = require('../core/logger');
--const path = require('path');
--const fs = require('fs');
--const axios = require('axios');
-+const _path = require('path');
-+const _fs = require('fs');
-+const _axios = require('axios');
- const { handleCommand } = require('./telegram-bot-command-handlers');
+--- a/bot/scenes/add-expense-scene.js
++++ b/bot/scenes/add-expense-scene.js
+@@ -2,7 +2,7 @@
+ const { Scenes } = require('telegraf');
+ const logger = require('../../core/logger');
+ const i18n = require('../localization/i18n');
 -const currencyConverter = require('../services/currency-conversion');
--const productNormalizer = require('../services/product-normalization');
--const documentSourceHandler = require('../services/document-source');
--const expenseHandlers = require('../services/expense-handlers');
--const expenseDuplicateHandler = require('../services/duplicate-handler');
++const _currencyConverter = require('../services/currency-conversion');
 
---- a/src/app.js
-+++ b/src/app.js
-@@ -13,12 +13,12 @@ const rateLimiter = require('./middleware/rateLimiter');
- const securityHeaders = require('./middleware/securityHeaders');
- const validation = require('./middleware/validation');
- const validator = require('./middleware/validator');
--const { body, validationResult } = require('express-validator');
-+const { _body, _validationResult } = require('express-validator');
- const cors = require('cors');
--const TelegramBot = require('node-telegram-bot-api');
--const winston = require('winston');
--const moment = require('moment');
--const { pool } = require('./config/database');
-+const _TelegramBot = require('node-telegram-bot-api');
-+const _winston = require('winston');
-+const _moment = require('moment');
-+const { _pool } = require('./config/database');
+--- a/bot/scenes/benchmark-scene.js
++++ b/bot/scenes/benchmark-scene.js
+@@ -66,7 +66,7 @@
+ async function handleBenchmarkStart(ctx) {
+-  const userId = ctx.from.id;
++  const _userId = ctx.from.id;
 
---- a/tests/integration/analytics-flow.test.js
-+++ b/tests/integration/analytics-flow.test.js
-@@ -1,9 +1,9 @@
- const testSetup = require('../helpers/test-setup');
--const userManager = require('../../services/user-management');
--const currencyConverter = require('../../services/currency-conversion');
--const i18nService = require('../../services/i18n');
--const { pool } = require('../../config/database');
-+const _userManager = require('../../services/user-management');
-+const _currencyConverter = require('../../services/currency-conversion');
-+const _i18nService = require('../../services/i18n');
-+const { _pool } = require('../../config/database');
+--- a/bot/scenes/receipt-processing-scene.js
++++ b/bot/scenes/receipt-processing-scene.js
+@@ -200,7 +200,7 @@
+ async function processReceipt(ctx) {
+-  const userId = ctx.from.id;
++  const _userId = ctx.from.id;
+@@ -474,7 +474,7 @@
+ async function handleReceiptUpload(ctx) {
+-  const userId = ctx.from.id;
++  const _userId = ctx.from.id;
 
-// Add more files here...
+--- a/bot/scenes/settings-scene.js
++++ b/bot/scenes/settings-scene.js
+@@ -2,7 +2,7 @@
+ const { Scenes } = require('telegraf');
+ const logger = require('../../core/logger');
+ const i18n = require('../localization/i18n');
+-const currencyConverter = require('../services/currency-conversion');
++const _currencyConverter = require('../services/currency-conversion');
+@@ -570,7 +570,7 @@
+-async function handlePeriodChange(ctx, period) {
++async function handlePeriodChange(ctx, _period) {
+
+--- a/bot/telegram-bot-command-handlers.js
++++ b/bot/telegram-bot-command-handlers.js
+@@ -1,7 +1,7 @@
+ const logger = require('../core/logger');
+ const { Markup } = require('telegraf');
+-const detectLanguage = require('../services/language-detection');
++const _detectLanguage = require('../services/language-detection');
