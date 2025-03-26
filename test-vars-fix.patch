@@ -1,0 +1,19 @@
+--- a/tests/helpers/test-setup.js
++++ b/tests/helpers/test-setup.js
+@@ -3,7 +3,7 @@
+ const database = require('../../src/config/database');
+ const testConfig = require('../../config/test/config');
+ const testUtils = require('./test-utils');
+-const userManager = require('../../services/user-management');
++const _userManager = require('../../services/user-management');
+
+--- a/tests/integration/analytics.test.js
++++ b/tests/integration/analytics.test.js
+@@ -1,8 +1,8 @@
+ const testSetup = require('../helpers/test-setup');
+-const analyticsService = require('../../services/analytics');
+-const metricsService = require('../../services/metrics');
+-const { pool } = require('../../config/database');
++const _analyticsService = require('../../services/analytics');
++const _metricsService = require('../../services/metrics');
++const { _pool } = require('../../config/database');

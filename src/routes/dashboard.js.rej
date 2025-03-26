@@ -1,0 +1,9 @@
+@@ -1547,7 +1547,7 @@
+     type: 'string',
+     required: true,
+-    description: "User's preferred currency symbol (e.g. $, €, £, ¥)",
++    description: "User's preferred currency symbol (e.g. USD, EUR, GBP, JPY)",
+     example: 'USD'
+   },
+ 
+ 

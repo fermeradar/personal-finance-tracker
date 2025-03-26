@@ -1,6 +1,4 @@
-@@ -58,13 +58,11 @@
-   const config = {
-     dsn: process.env.SENTRY_DSN,
+@@ -60,11 +60,9 @@
      integrations: [new Integrations.Http({ tracing: true })],
 -    tracesSampleRate: 1.0,
      environment: process.env.NODE_ENV || 'development',

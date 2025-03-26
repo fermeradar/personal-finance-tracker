@@ -1,0 +1,9 @@
+@@ -52,7 +52,7 @@
+     logger.info('Cleanup completed successfully');
+   } catch (error) {
+     logger.error('Cleanup failed:', error);
+-    process.exit(1);
++    throw error;
+   }
+ }
+ 

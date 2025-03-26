@@ -1,0 +1,9 @@
+@@ -38,7 +38,7 @@
+     logger.info('Permissions fixed successfully');
+   } catch (error) {
+     logger.error('Failed to fix permissions:', error);
+-    process.exit(1);
++    throw error;
+   }
+ }
+ 

@@ -1,0 +1,9 @@
+@@ -44,7 +44,7 @@
+     logger.info('Installation verified successfully');
+   } catch (error) {
+     logger.error('Verification failed:', error);
+-    process.exit(1);
++    throw error;
+   }
+ }
+ 
