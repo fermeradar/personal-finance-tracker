@@ -1,0 +1,25 @@
+--- a/bot/telegram-bot-command-handlers.js
++++ b/bot/telegram-bot-command-handlers.js
+@@ -382,7 +382,7 @@
+     switch (command) {
+       case 'start':
+-        {
+-          let userData = await getUserData(ctx);
+-          // Rest of the code...
+-        }
++        const userData = await getUserData(ctx);
++        // Rest of the code...
++        break;
+
+--- a/services/analytics/expense-benchmarking-service.js
++++ b/services/analytics/expense-benchmarking-service.js
+@@ -110,7 +110,7 @@
+     switch (period) {
+       case 'daily':
+-        {
+-          let startDate = moment().startOf('day');
+-          // Rest of the code...
+-        }
++        const startDate = moment().startOf('day');
++        // Rest of the code...
++        break;

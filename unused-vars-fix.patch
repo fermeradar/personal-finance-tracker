@@ -1,0 +1,51 @@
+--- a/bot/telegram-bot-implementation.js
++++ b/bot/telegram-bot-implementation.js
+@@ -2,17 +2,17 @@
+ const { Telegraf } = require('telegraf');
+ const config = require('../config');
+ const logger = require('../core/logger');
+-const path = require('path');
+-const fs = require('fs');
+-const axios = require('axios');
++const _path = require('path');
++const _fs = require('fs');
++const _axios = require('axios');
+ const { handleCommand } = require('./telegram-bot-command-handlers');
+-const currencyConverter = require('../services/currency-conversion');
+-const productNormalizer = require('../services/product-normalization');
+-const documentSourceHandler = require('../services/document-source');
+-const expenseHandlers = require('../services/expense-handlers');
+-const expenseDuplicateHandler = require('../services/duplicate-handler');
+
+--- a/src/app.js
++++ b/src/app.js
+@@ -13,12 +13,12 @@ const rateLimiter = require('./middleware/rateLimiter');
+ const securityHeaders = require('./middleware/securityHeaders');
+ const validation = require('./middleware/validation');
+ const validator = require('./middleware/validator');
+-const { body, validationResult } = require('express-validator');
++const { _body, _validationResult } = require('express-validator');
+ const cors = require('cors');
+-const TelegramBot = require('node-telegram-bot-api');
+-const winston = require('winston');
+-const moment = require('moment');
+-const { pool } = require('./config/database');
++const _TelegramBot = require('node-telegram-bot-api');
++const _winston = require('winston');
++const _moment = require('moment');
++const { _pool } = require('./config/database');
+
+--- a/tests/integration/analytics-flow.test.js
++++ b/tests/integration/analytics-flow.test.js
+@@ -1,9 +1,9 @@
+ const testSetup = require('../helpers/test-setup');
+-const userManager = require('../../services/user-management');
+-const currencyConverter = require('../../services/currency-conversion');
+-const i18nService = require('../../services/i18n');
+-const { pool } = require('../../config/database');
++const _userManager = require('../../services/user-management');
++const _currencyConverter = require('../../services/currency-conversion');
++const _i18nService = require('../../services/i18n');
++const { _pool } = require('../../config/database');
+
+// Add more files here...

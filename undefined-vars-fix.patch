@@ -1,0 +1,16 @@
+--- a/bot/telegram-bot-command-handlers.js
++++ b/bot/telegram-bot-command-handlers.js
+@@ -539,6 +539,7 @@
+ async function handleLanguageChange(ctx) {
++  const userLanguage = ctx.session.userLanguage || 'en';
+   // Rest of the code...
+ }
+
+--- a/bot/scenes/benchmark-scene.js
++++ b/bot/scenes/benchmark-scene.js
+@@ -1,6 +1,7 @@
+ const { Scenes } = require('telegraf');
+ const logger = require('../../core/logger');
+ const i18n = require('../localization/i18n');
++const currencyConverter = require('../../services/currency-conversion');
+ 
