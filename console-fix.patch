@@ -1,0 +1,11 @@
+--- a/core/logger-utility.js
++++ b/core/logger-utility.js
+@@ -80,7 +80,7 @@
+-    console.log(message);
++    logger.info(message);
+
+@@ -92,7 +92,7 @@
+-    console.log(error);
++    logger.error(error);
+
+// ... similar changes for other console.log statements

@@ -5,9 +5,13 @@
  const { Markup } = require('telegraf');
  const { pool } = require('../config/database');
 +const userLanguage = require('../services/i18n').getDefaultLanguage();
-+
-@@ -537,7 +539,6 @@
- async function handleLanguageChange(ctx) {
--  const userLanguage = ctx.session.userLanguage || 'en';
-   // ... rest of the code
- }
++const looksLikeExpense = require('../services/expense-detection').looksLikeExpense;
++const processNaturalLanguageExpense = require('../services/expense-processing').processNaturalLanguageExpense;
+
+--- a/bot/scenes/benchmark-scene.js
++++ b/bot/scenes/benchmark-scene.js
+@@ -1,6 +1,7 @@
+ const { Scenes } = require('telegraf');
+ const logger = require('../../core/logger');
+ const i18n = require('../localization/i18n');
++const currencyConverter = require('../../services/currency-conversion');

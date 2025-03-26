@@ -1,18 +1,27 @@
---- a/bot/telegram-bot-command-handlers.js
-+++ b/bot/telegram-bot-command-handlers.js
-@@ -380,11 +380,10 @@
-   try {
-     switch (command) {
-       case 'start':
+--- a/bot/scenes/benchmark-scene.js
++++ b/bot/scenes/benchmark-scene.js
+@@ -664,10 +664,9 @@
+     switch (action) {
+       case 'compare':
 -        {
--          let userData = await getUserData(ctx);
--          // ... rest of the code
--          break;
+-          let comparisonData = await getComparisonData(ctx);
+-          // Rest of the code
 -        }
-+        const userData = await getUserData(ctx);
-+        // ... rest of the code
++        const comparisonData = await getComparisonData(ctx);
++        // Rest of the code
 +        break;
-+
-       // ... other cases
-     }
-   } catch (error) {
+
+--- a/services/analytics/expense-benchmarking-service.js
++++ b/services/analytics/expense-benchmarking-service.js
+@@ -109,13 +109,12 @@
+     switch (period) {
+       case 'daily':
+-        {
+-          let startDate = moment().startOf('day');
+-          let endDate = moment().endOf('day');
+-          // Rest of the code
+-        }
++        const startDate = moment().startOf('day');
++        const endDate = moment().endOf('day');
++        // Rest of the code
++        break;
