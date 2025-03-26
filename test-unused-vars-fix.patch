@@ -1,0 +1,24 @@
+--- a/tests/integration/analytics-flow.test.js
++++ b/tests/integration/analytics-flow.test.js
+@@ -1,9 +1,9 @@
+ const testSetup = require('../helpers/test-setup');
+-const userManager = require('../../services/user-management');
+-const currencyConverter = require('../../services/core/currency-conversion-service');
+-const i18nService = require('../../services/localization/i18n-service');
+-const { pool } = require('../../config/database');
++const _userManager = require('../../services/user-management');
++const _currencyConverter = require('../../services/core/currency-conversion-service');
++const _i18nService = require('../../services/localization/i18n-service');
++const { _pool } = require('../../config/database');
+
+-const { startDate, endDate } = getTestDates();
++const { _startDate, _endDate } = getTestDates();
+
+--- a/tests/integration/security.test.js
++++ b/tests/integration/security.test.js
+@@ -2,7 +2,7 @@
+ const request = require('supertest');
+ const app = require('../../src/app');
+ const { generateToken } = require('../../src/utils/auth');
+-const logger = require('../../core/logger-utility');
++const _logger = require('../../core/logger-utility');
