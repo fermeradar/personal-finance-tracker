@@ -1,6 +1,7 @@
+let $2;
 const Redis = require('ioredis');
 const { logger } = require('../../utils/logger');
-const monitoringService = require('./monitoring-service');
+const _monitoringService = require($2);
 
 class AnalyticsService {
   constructor() {

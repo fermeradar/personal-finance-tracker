@@ -1,3 +1,4 @@
+const logger = require('../core/logger-utility');
 // src/utils/logger.js
 const fs = require('fs');
 const path = require('path');
@@ -78,7 +79,7 @@ class Logger {
     } catch (error) {
       // Log to file only since DB might be unavailable
       const errorMsg = `Failed to write log to database: ${error.message}`;
-      console.error(errorMsg);
+      logger.error(errorMsg);
       this.writeToFile(`[${new Date().toISOString()}] [ERROR] ${errorMsg}`);
     }
   }
@@ -90,7 +91,7 @@ class Logger {
    */
   info(message, data) {
     const formattedMessage = this.formatLog('info', message, data);
-    console.log(formattedMessage);
+    logger.info(formattedMessage);
     this.writeToFile(formattedMessage);
     
     // Only write certain info logs to DB (not cluttering it)
@@ -106,7 +107,7 @@ class Logger {
    */
   warn(message, data) {
     const formattedMessage = this.formatLog('warn', message, data);
-    console.warn(formattedMessage);
+    logger.warn(formattedMessage);
     this.writeToFile(formattedMessage);
     this.writeToDatabase('warn', message, data).catch(() => {});
   }
@@ -118,7 +119,7 @@ class Logger {
    */
   error(message, data) {
     const formattedMessage = this.formatLog('error', message, data);
-    console.error(formattedMessage);
+    logger.error(formattedMessage);
     this.writeToFile(formattedMessage);
     this.writeToDatabase('error', message, data).catch(() => {});
   }
@@ -131,7 +132,7 @@ class Logger {
   debug(message, data) {
     if (process.env.NODE_ENV !== 'production') {
       const formattedMessage = this.formatLog('debug', message, data);
-      console.debug(formattedMessage);
+      logger.debug(formattedMessage);
       this.writeToFile(formattedMessage);
     }
   }

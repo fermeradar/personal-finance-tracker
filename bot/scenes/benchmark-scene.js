@@ -1,9 +1,12 @@
+let userId;
+let quarter;
 // src/scenes/benchmarkScene.js
 const { Scenes, Markup } = require('telegraf');
 const { Pool } = require('pg');
 const { getUserLanguage } = require('../services/core/user-manager');
 const expenseBenchmarkService = require('../services/analytics/expense-benchmark-service');
 const logger = require('../utils/logger');
+const { currencyConverter } = require('../../services/core/currency-conversion-service');
 
 // Initialize PostgreSQL connection pool
 const pool = new Pool({
@@ -15,19 +18,19 @@ const benchmarkScene = new Scenes.WizardScene(
   // Step 1: Show benchmark options
   async (ctx) => {
     try {
-      const userId = ctx.from.id.toString();
-      const userLanguage = await getUserLanguage(userId);
+      const _userId = ctx.from.id.toString();
+      const userLanguage = await getUserLanguage(_userId);
       
       // Save user ID in session
-      ctx.scene.session.userId = userId;
+      ctx.scene.session._userId = userId;
       ctx.scene.session.userLanguage = userLanguage;
       
       // Get user currency
-      const userCurrency = await getUserCurrency(userId);
+      const userCurrency = await getUserCurrency(_userId);
       ctx.scene.session.userCurrency = userCurrency;
       
       // Check if user has enough data
-      const hasEnoughData = await checkUserHasEnoughData(userId);
+      const hasEnoughData = await checkUserHasEnoughData(_userId);
       
       if (!hasEnoughData) {
         // Not enough data for benchmarking
@@ -66,7 +69,7 @@ const benchmarkScene = new Scenes.WizardScene(
   // Step 2: Handle benchmark selection
   async (ctx) => {
     try {
-      const userId = ctx.scene.session.userId;
+      const _userId = ctx.scene.session._userId;
       const userLanguage = ctx.scene.session.userLanguage;
       
       // Check for cancel
@@ -128,7 +131,7 @@ const benchmarkScene = new Scenes.WizardScene(
   // Step 3: Handle time period selection and generate benchmark
   async (ctx) => {
     try {
-      const userId = ctx.scene.session.userId;
+      const _userId = ctx.scene.session._userId;
       const userLanguage = ctx.scene.session.userLanguage;
       const userCurrency = ctx.scene.session.userCurrency;
       
@@ -174,7 +177,7 @@ const benchmarkScene = new Scenes.WizardScene(
       // Generate benchmark
       try {
         const benchmark = await expenseBenchmarkService.generateUserBenchmark(
-          userId,
+          _userId,
           timePeriod,
           userCurrency
         );
@@ -182,23 +185,31 @@ const benchmarkScene = new Scenes.WizardScene(
         // Format benchmark based on type
         let formattedBenchmark;
         switch (ctx.scene.session.benchmarkType) {
-          case 'monthly':
+          case 'monthly': {
             formattedBenchmark = formatMonthlyBenchmark(benchmark, userLanguage);
             break;
             
-          case 'category':
+          
+
+}case 'category': {
             formattedBenchmark = formatCategoryBenchmark(benchmark, userLanguage);
             break;
             
-          case 'regional':
+          
+
+}case 'regional': {
             formattedBenchmark = formatRegionalBenchmark(benchmark, userLanguage);
             break;
             
-          case 'top':
-            formattedBenchmark = await getTopExpenses(userId, timePeriod, userLanguage);
+          
+
+}case 'top': {
+            formattedBenchmark = await getTopExpenses(_userId, timePeriod, userLanguage);
             break;
             
-          default:
+          
+
+}default:
             // Fallback to monthly
             formattedBenchmark = formatMonthlyBenchmark(benchmark, userLanguage);
         }
@@ -324,11 +335,11 @@ benchmarkScene.hears(['Cancel', 'Отмена'], (ctx) => {
  * @param {String} userId - User ID
  * @returns {Promise<String>} - Currency code
  */
-async function getUserCurrency(userId) {
+async function getUserCurrency(_userId) {
   try {
     const result = await pool.query(
       'SELECT currency FROM users WHERE user_id = $1',
-      [userId]
+      [_userId]
     );
     
     if (result.rows.length > 0 && result.rows[0].currency) {
@@ -347,11 +358,11 @@ async function getUserCurrency(userId) {
  * @param {String} userId - User ID
  * @returns {Promise<Boolean>} - Whether user has enough data
  */
-async function checkUserHasEnoughData(userId) {
+async function checkUserHasEnoughData(_userId) {
   try {
     const result = await pool.query(
       'SELECT COUNT(*) FROM expenses WHERE user_id = $1',
-      [userId]
+      [_userId]
     );
     
     const count = parseInt(result.rows[0].count);
@@ -647,34 +658,42 @@ function formatRegionalBenchmark(benchmark, language) {
  * @param {String} language - User language
  * @returns {Promise<String>} - Formatted top expenses
  */
-async function getTopExpenses(userId, timePeriod, language) {
+async function getTopExpenses(_userId, timePeriod, language) {
   try {
     // Calculate date range
     const endDate = new Date();
     let startDate = new Date();
     
     switch (timePeriod) {
-      case 'month':
+      case 'month': {
         startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
         break;
-      case 'last_month':
+      
+
+}case 'last_month': {
         startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
         endDate.setDate(0); // Last day of previous month
         break;
-      case 'quarter':
-        const quarter = Math.floor(endDate.getMonth() / 3);
+      
+
+}case 'quarter': {
+    quarter = Math.floor(endDate.getMonth() / 3);
         startDate = new Date(endDate.getFullYear(), quarter * 3, 1);
         break;
-      case 'year':
+      
+
+}case 'year': {
         startDate = new Date(endDate.getFullYear(), 0, 1);
         break;
-      default:
+      
+
+}default:
         // Default to last 30 days
         startDate.setDate(startDate.getDate() - 30);
     }
     
     // Get user currency
-    const userCurrency = await getUserCurrency(userId);
+    const userCurrency = await getUserCurrency(_userId);
     const currencySymbol = getCurrencySymbol(userCurrency);
     
     // Query top expenses
@@ -726,19 +745,27 @@ async function getTopExpenses(userId, timePeriod, language) {
     // Format time period name
     let periodName;
     switch (timePeriod) {
-      case 'month':
+      case 'month': {
         periodName = language === 'en' ? 'Current Month' : 'Текущий месяц';
         break;
-      case 'last_month':
+      
+
+}case 'last_month': {
         periodName = language === 'en' ? 'Last Month' : 'Прошлый месяц';
         break;
-      case 'quarter':
+      
+
+}case 'quarter': {
         periodName = language === 'en' ? 'Current Quarter' : 'Текущий квартал';
         break;
-      case 'year':
+      
+
+}case 'year': {
         periodName = language === 'en' ? 'Year to Date' : 'С начала года';
         break;
-      default:
+      
+
+}default:
         periodName = language === 'en' ? 'Selected Period' : 'Выбранный период';
     }
     

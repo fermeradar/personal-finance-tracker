@@ -2,6 +2,7 @@ const Sentry = require('@sentry/node');
 const { logger } = require('../../utils/logger');
 const { AppError } = require('../../utils/errors/AppError');
 const telegramNotification = require('./telegram-notification-service');
+const { _Integrations } = require('@sentry/node');
 
 class ErrorMonitoringService {
   constructor() {
@@ -27,7 +28,9 @@ class ErrorMonitoringService {
       environment = process.env.NODE_ENV || 'development',
       tracesSampleRate = 1.0,
       integrations = [],
-      errorThresholds = {}
+      errorThresholds = {},
+      _debug = process.env.NODE_ENV !== 'production',
+      release = process.env.APP_VERSION
     } = config;
 
     // Update error thresholds if provided
@@ -40,31 +43,23 @@ class ErrorMonitoringService {
       Sentry.init({
         dsn,
         environment,
-        tracesSampleRate,
         integrations: [
-          new Sentry.Integrations.Http({ tracing: true }),
+          new Sentry._Integrations.Http({ tracing: true }),
           new Sentry.Integrations.Express(),
           new Sentry.Integrations.Postgres(),
           new Sentry.Integrations.Redis(),
           ...integrations
         ],
         beforeSend(event) {
-          // Don't send errors in development
           if (environment === 'development') {
             return null;
           }
           return event;
         },
-        // Configure error sampling
         sampleRate: environment === 'production' ? 0.1 : 1.0,
-        // Configure performance monitoring
-        tracesSampleRate: environment === 'production' ? 0.1 : 1.0,
-        // Configure session tracking
+        tracesSampleRate,
         autoSessionTracking: true,
-        // Configure release tracking
-        release: process.env.npm_package_version,
-        // Configure environment
-        environment
+        release,
       });
 
       this.sentryEnabled = true;
@@ -193,7 +188,7 @@ class ErrorMonitoringService {
         case 403:
           return 'info';
         case 404:
-          return 'debug';
+          return '_debug';
         case 429:
           return 'warning';
         case 500:

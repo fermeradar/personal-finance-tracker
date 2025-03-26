@@ -1,5 +1,5 @@
+const logger = require('../core/logger-utility');
 import { telegramService } from '../services/telegram/telegram-service.js';
-import { logger } from '../utils/logger.js';
 
 // Example of sending a notification
 async function sendTestNotification() {

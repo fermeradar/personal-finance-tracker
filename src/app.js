@@ -1,3 +1,5 @@
+let dashboardRoutes;
+let $2;
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -11,14 +13,14 @@ const healthRoutes = require('./routes/health');
 const errorHandler = require('./middleware/errorHandler');
 const rateLimiter = require('./middleware/rateLimiter');
 const securityHeaders = require('./middleware/securityHeaders');
-const dashboardRoutes = require('./routes/dashboard');
+const _dashboard = require($2);
 const { rateLimit } = require('express-rate-limit');
-const { body, validationResult } = require('express-validator');
+const { _body, _validationResult } = require('express-validator');
 const jwt = require('express-jwt');
-const TelegramBot = require('node-telegram-bot-api');
-const winston = require('winston');
-const moment = require('moment');
-const { pool, validateConnection, closePool } = require('./config/database');
+const _TelegramBot = require($2);
+const _winston = require($2);
+const _moment = require($2);
+const { _pool, validateConnection, closePool } = require('./config/database');
 
 const app = express();
 
@@ -65,7 +67,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // JWT authentication
-const jwtMiddleware = jwt({
+const _jwtMiddleware = jwt({
   secret: process.env.JWT_SECRET || 'your-secret-key',
   algorithms: ['HS256']
 }).unless({

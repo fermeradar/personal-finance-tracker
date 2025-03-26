@@ -1,7 +1,12 @@
+const logger = require('../core/logger-utility');
+let _endDate;
+let _startDate;
+let $2;
 // src/services/expenseBenchmarkService.js
 const { Pool } = require('pg');
 const currencyConverter = require('./currencyConverter');
-const locationIntelligence = require('./locationIntelligence');
+const _locationIntelligence = require($2);
+const moment = require('moment');
 
 // Initialize PostgreSQL connection pool
 const pool = new Pool({
@@ -44,16 +49,16 @@ class ExpenseBenchmarkService {
       const locationData = locationResult.rows.length > 0 ? locationResult.rows[0] : null;
       
       // Generate time period constraints
-      const { startDate, endDate, intervalLabel } = this.getTimePeriod(timeframe);
+      const { _startDate, _endDate, intervalLabel } = this.getTimePeriod(timeframe);
       
       // Get user's expenses for the period
-      const userExpenses = await this.getUserExpensesForPeriod(userId, startDate, endDate, currency);
+      const userExpenses = await this.getUserExpensesForPeriod(userId, _startDate, _endDate, currency);
       
       // Get benchmark data
       const benchmarks = await this.getBenchmarkData(
         locationData,
-        startDate,
-        endDate,
+        _startDate,
+        _endDate,
         currency
       );
       
@@ -72,8 +77,8 @@ class ExpenseBenchmarkService {
         timeframe: {
           period: timeframe,
           label: intervalLabel,
-          startDate,
-          endDate
+          _startDate,
+          _endDate
         },
         currency,
         userStatistics: userStats,
@@ -82,7 +87,7 @@ class ExpenseBenchmarkService {
         insights: this.generateInsights(userStats, benchmarks, comparisons)
       };
     } catch (error) {
-      console.error('Error generating user benchmark:', error);
+      logger.error('Error generating user benchmark:', error);
       throw error;
     }
   }
@@ -94,38 +99,37 @@ class ExpenseBenchmarkService {
    */
   getTimePeriod(timeframe) {
     const now = new Date();
-    const endDate = new Date();
+    let endDate = new Date();
     let startDate = new Date();
     let intervalLabel = '';
     
     switch (timeframe) {
-      case 'month':
-        // Current month
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      case 'week': {
+        startDate = moment().subtract(1, 'week').startOf('day');
+        endDate = moment().endOf('day');
+        intervalLabel = 'Last week';
+        break;
+      }
+      case 'month': {
+        startDate = moment().subtract(1, 'month').startOf('day');
+        endDate = moment().endOf('day');
         intervalLabel = `${startDate.toLocaleString('default', { month: 'long' })} ${startDate.getFullYear()}`;
         break;
-        
-      case 'quarter':
-        // Current quarter
-        const quarter = Math.floor(now.getMonth() / 3);
-        startDate = new Date(now.getFullYear(), quarter * 3, 1);
-        intervalLabel = `Q${quarter + 1} ${startDate.getFullYear()}`;
-        break;
-        
-      case 'year':
-        // Current year
-        startDate = new Date(now.getFullYear(), 0, 1);
+      }
+      case 'year': {
+        startDate = moment().subtract(1, 'year').startOf('day');
+        endDate = moment().endOf('day');
         intervalLabel = startDate.getFullYear().toString();
         break;
-        
-      case 'last_month':
+      }
+      case 'last_month': {
         // Previous month
         startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         endDate = new Date(now.getFullYear(), now.getMonth(), 0); // Last day of previous month
         intervalLabel = `${startDate.toLocaleString('default', { month: 'long' })} ${startDate.getFullYear()}`;
         break;
-        
-      case 'last_quarter':
+      }
+      case 'last_quarter': {
         // Previous quarter
         const lastQuarter = Math.floor(now.getMonth() / 3) - 1;
         const quarterYear = lastQuarter < 0 ? now.getFullYear() - 1 : now.getFullYear();
@@ -134,14 +138,14 @@ class ExpenseBenchmarkService {
         endDate = new Date(quarterYear, (adjustedQuarter + 1) * 3, 0);
         intervalLabel = `Q${adjustedQuarter + 1} ${quarterYear}`;
         break;
-        
-      case 'last_year':
+      }
+      case 'last_year': {
         // Previous year
         startDate = new Date(now.getFullYear() - 1, 0, 1);
         endDate = new Date(now.getFullYear() - 1, 11, 31);
         intervalLabel = startDate.getFullYear().toString();
         break;
-        
+      }
       default:
         // Default to last 30 days
         startDate = new Date();
@@ -160,7 +164,7 @@ class ExpenseBenchmarkService {
    * @param {String} targetCurrency - Currency to standardize to
    * @returns {Promise<Array>} - User expenses
    */
-  async getUserExpensesForPeriod(userId, startDate, endDate, targetCurrency) {
+  async getUserExpensesForPeriod(userId, _startDate, _endDate, targetCurrency) {
     try {
       // Get expenses
       const expensesResult = await pool.query(`
@@ -181,7 +185,7 @@ class ExpenseBenchmarkService {
           AND e.expense_date >= $2
           AND e.expense_date <= $3
         ORDER BY e.expense_date DESC
-      `, [userId, startDate, endDate]);
+      `, [userId, _startDate, _endDate]);
       
       // Standardize currencies where needed
       const expenses = expensesResult.rows;
@@ -207,7 +211,7 @@ class ExpenseBenchmarkService {
             
             standardizedAmount = conversionResult.convertedAmount;
           } catch (conversionError) {
-            console.warn('Currency conversion error:', conversionError);
+            logger.warn('Currency conversion error:', conversionError);
             // Continue with original amount as fallback
           }
         }
@@ -221,7 +225,7 @@ class ExpenseBenchmarkService {
       
       return standardizedExpenses;
     } catch (error) {
-      console.error('Error fetching user expenses:', error);
+      logger.error('Error fetching user expenses:', error);
       throw error;
     }
   }
@@ -234,7 +238,7 @@ class ExpenseBenchmarkService {
    * @param {String} currency - Currency for standardization
    * @returns {Promise<Object>} - Benchmark data
    */
-  async getBenchmarkData(locationData, startDate, endDate, currency) {
+  async getBenchmarkData(locationData, _startDate, _endDate, currency) {
     try {
       // Base query for benchmarks
       let query = `
@@ -286,7 +290,7 @@ class ExpenseBenchmarkService {
         )
       `;
       
-      const params = [startDate, endDate];
+      const params = [_startDate, _endDate];
       let paramIndex = 3;
       
       // Different benchmark queries depending on location data
@@ -420,10 +424,8 @@ class ExpenseBenchmarkService {
       
       // Group by benchmark type and organize data
       for (const row of rawBenchmarks) {
-        const type = row.benchmark_type;
-        
-        if (!processedBenchmarks[type]) {
-          processedBenchmarks[type] = {
+        if (!processedBenchmarks[row.benchmark_type]) {
+          processedBenchmarks[row.benchmark_type] = {
             location: row.location,
             user_count: parseInt(row.user_count),
             total: {
@@ -439,7 +441,7 @@ class ExpenseBenchmarkService {
         
         // Add category data
         if (row.category_name) {
-          processedBenchmarks[type].categories[row.category_name] = {
+          processedBenchmarks[row.benchmark_type].categories[row.category_name] = {
             avg_spent: parseFloat(row.avg_category_spent),
             median_spent: parseFloat(row.median_category_spent)
           };
@@ -447,6 +449,7 @@ class ExpenseBenchmarkService {
       }
       
       // Convert all benchmark amounts to target currency
+      // eslint-disable-next-line no-unused-vars
       for (const [benchmarkType, data] of Object.entries(processedBenchmarks)) {
         // Convert total amounts
         data.total.avg_spent_standard = await this.standardizeAmount(
@@ -491,7 +494,7 @@ class ExpenseBenchmarkService {
       
       return processedBenchmarks;
     } catch (error) {
-      console.error('Error fetching benchmark data:', error);
+      logger.error('Error fetching benchmark data:', error);
       throw error;
     }
   }
@@ -672,30 +675,30 @@ class ExpenseBenchmarkService {
     const insights = [];
     
     // Prioritize local insights if available
-    const benchmarkType = benchmarks.local ? 'local' : benchmarks.country ? 'country' : 'global';
-    const comparison = comparisons[benchmarkType];
-    const benchmark = benchmarks[benchmarkType];
+    const selectedBenchmarkType = benchmarks.local ? 'local' : benchmarks.country ? 'country' : 'global';
+    const comparison = comparisons[selectedBenchmarkType];
+    const benchmark = benchmarks[selectedBenchmarkType];
     
     // Overall spending insight
     if (comparison.total_spent.vs_median_percent > 20) {
       insights.push({
         type: 'overall_high',
         severity: 'high',
-        message: `Your total spending is ${comparison.total_spent.vs_median_percent.toFixed(0)}% higher than the ${benchmarkType} median.`,
+        message: `Your total spending is ${comparison.total_spent.vs_median_percent.toFixed(0)}% higher than the ${selectedBenchmarkType} median.`,
         percentile: comparison.total_spent.percentile.toFixed(0)
       });
     } else if (comparison.total_spent.vs_median_percent > 5) {
       insights.push({
         type: 'overall_high',
         severity: 'medium',
-        message: `Your total spending is ${comparison.total_spent.vs_median_percent.toFixed(0)}% higher than the ${benchmarkType} median.`,
+        message: `Your total spending is ${comparison.total_spent.vs_median_percent.toFixed(0)}% higher than the ${selectedBenchmarkType} median.`,
         percentile: comparison.total_spent.percentile.toFixed(0)
       });
     } else if (comparison.total_spent.vs_median_percent < -20) {
       insights.push({
         type: 'overall_low',
         severity: 'low',
-        message: `Your total spending is ${Math.abs(comparison.total_spent.vs_median_percent).toFixed(0)}% lower than the ${benchmarkType} median.`,
+        message: `Your total spending is ${Math.abs(comparison.total_spent.vs_median_percent).toFixed(0)}% lower than the ${selectedBenchmarkType} median.`,
         percentile: comparison.total_spent.percentile.toFixed(0)
       });
     }
@@ -713,7 +716,7 @@ class ExpenseBenchmarkService {
           type: 'category_high',
           category,
           severity: 'high',
-          message: `Your spending on ${category} is ${catComparison.vs_median_percent.toFixed(0)}% higher than the ${benchmarkType} median.`,
+          message: `Your spending on ${category} is ${catComparison.vs_median_percent.toFixed(0)}% higher than the ${selectedBenchmarkType} median.`,
           amount: userCategoryData.total,
           percent_of_total: userCategoryData.percentage.toFixed(1)
         });
@@ -722,7 +725,7 @@ class ExpenseBenchmarkService {
           type: 'category_high',
           category,
           severity: 'medium',
-          message: `Your spending on ${category} is ${catComparison.vs_median_percent.toFixed(0)}% higher than the ${benchmarkType} median.`,
+          message: `Your spending on ${category} is ${catComparison.vs_median_percent.toFixed(0)}% higher than the ${selectedBenchmarkType} median.`,
           amount: userCategoryData.total,
           percent_of_total: userCategoryData.percentage.toFixed(1)
         });
@@ -746,7 +749,7 @@ class ExpenseBenchmarkService {
       insights.push({
         type: 'transaction_high',
         severity: 'medium',
-        message: `You have ${comparison.transaction_count.vs_avg_percent.toFixed(0)}% more transactions than the ${benchmarkType} average.`,
+        message: `You have ${comparison.transaction_count.vs_avg_percent.toFixed(0)}% more transactions than the ${selectedBenchmarkType} average.`,
         count: userStats.transaction_count,
         avg_size: userStats.avg_expense.toFixed(2)
       });
@@ -754,7 +757,7 @@ class ExpenseBenchmarkService {
       insights.push({
         type: 'transaction_low',
         severity: 'low',
-        message: `You have ${Math.abs(comparison.transaction_count.vs_avg_percent).toFixed(0)}% fewer transactions than the ${benchmarkType} average.`,
+        message: `You have ${Math.abs(comparison.transaction_count.vs_avg_percent).toFixed(0)}% fewer transactions than the ${selectedBenchmarkType} average.`,
         count: userStats.transaction_count,
         avg_size: userStats.avg_expense.toFixed(2)
       });
@@ -815,7 +818,7 @@ class ExpenseBenchmarkService {
       
       return conversion.convertedAmount;
     } catch (error) {
-      console.warn('Currency conversion error in benchmarking:', error);
+      logger.warn('Currency conversion error in benchmarking:', error);
       return amount; // Return original amount as fallback
     }
   }
@@ -863,7 +866,7 @@ class ExpenseBenchmarkService {
         benchmark: result.rows[0]
       };
     } catch (error) {
-      console.error('Error creating regional benchmark:', error);
+      logger.error('Error creating regional benchmark:', error);
       return {
         success: false,
         error: error.message

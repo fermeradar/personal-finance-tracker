@@ -1,4 +1,4 @@
-const { body, query, validationResult } = require('express-validator');
+const { _body, query, validationResult } = require('express-validator');
 const { AppError } = require('../utils/errors');
 
 const validateMetricsRequest = [

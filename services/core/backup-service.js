@@ -1,3 +1,4 @@
+const logger = require('../core/logger-utility');
 // src/services/backupService.js
 const { exec } = require('child_process');
 const fs = require('fs');
@@ -46,7 +47,7 @@ class BackupService {
         this.retentionDays = parseInt(settingsResult.rows[0].setting_value) || 30;
       }
     } catch (error) {
-      console.error('Error loading backup settings:', error);
+      logger.error('Error loading backup settings:', error);
       // Continue with default settings
     }
   }
@@ -125,7 +126,7 @@ class BackupService {
         }
       };
     } catch (error) {
-      console.error('Backup creation error:', error);
+      logger.error('Backup creation error:', error);
       return {
         success: false,
         error: error.message
@@ -183,7 +184,7 @@ class BackupService {
         details: { stdout, stderr }
       };
     } catch (error) {
-      console.error('Backup restoration error:', error);
+      logger.error('Backup restoration error:', error);
       
       // Log the restoration failure
       try {
@@ -198,7 +199,7 @@ class BackupService {
           JSON.stringify({ error: error.message })
         ]);
       } catch (logError) {
-        console.error('Error logging restoration failure:', logError);
+        logger.error('Error logging restoration failure:', logError);
       }
       
       return {
@@ -251,7 +252,7 @@ class BackupService {
       // Sort by date (newest first)
       return backups.sort((a, b) => b.date - a.date);
     } catch (error) {
-      console.error('Error getting available backups:', error);
+      logger.error('Error getting available backups:', error);
       return [];
     }
   }
@@ -275,7 +276,7 @@ class BackupService {
       
       return null;
     } catch (error) {
-      console.error('Error getting backup metadata:', error);
+      logger.error('Error getting backup metadata:', error);
       return null;
     }
   }
@@ -315,7 +316,7 @@ class BackupService {
           
           deletedCount++;
         } catch (deleteError) {
-          console.error(`Error deleting backup ${backup.filename}:`, deleteError);
+          logger.error(`Error deleting backup ${backup.filename}:`, deleteError);
         }
       }
       
@@ -343,7 +344,7 @@ class BackupService {
         remainingCount: backups.length - deletedCount
       };
     } catch (error) {
-      console.error('Error cleaning up old backups:', error);
+      logger.error('Error cleaning up old backups:', error);
       return {
         success: false,
         error: error.message
@@ -400,7 +401,7 @@ class BackupService {
         databaseSize: sizeResult.rows[0].db_size
       };
     } catch (error) {
-      console.error('Error getting table summary:', error);
+      logger.error('Error getting table summary:', error);
       return {
         tables: [],
         totalTables: 0,
@@ -424,7 +425,7 @@ class BackupService {
     // 1. Set up a cron job or use a scheduling library like node-schedule
     // 2. Configure it to run the createBackup method according to the schedule
     
-    console.log(`Backup scheduling configured: ${schedule}`);
+    logger.info(`Backup scheduling configured: ${schedule}`);
     
     return {
       status: 'Scheduled',

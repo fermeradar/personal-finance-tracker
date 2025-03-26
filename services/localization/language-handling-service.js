@@ -1,3 +1,4 @@
+const logger = require('../core/logger-utility');
 // src/services/languageHandler.js
 const { Pool } = require('pg');
 const { detectLanguage } = require('./languageDetector');
@@ -17,10 +18,10 @@ class LanguageHandler {
    * @param {String} userId - User ID for preference lookup
    * @param {String} text - Text to process
    * @param {Boolean} translateToEnglish - Whether to translate non-English text to English
-   * @param {Boolean} storeOriginal - Whether to store the original text
+   * @param {Boolean} _storeOriginal - Whether to store the original text
    * @returns {Promise<Object>} - Processing result with detected language, original, and translated text
    */
-  async processText(userId, text, translateToEnglish = true, storeOriginal = true) {
+  async processText(userId, text, translateToEnglish = true, _storeOriginal = true) {
     try {
       // Get user's preferred language
       const userLanguage = await this.getUserLanguage(userId);
@@ -43,7 +44,7 @@ class LanguageHandler {
       
       return result;
     } catch (error) {
-      console.error('Error processing text with language detection:', error);
+      logger.error('Error processing text with language detection:', error);
       // Return basic result in case of error
       return {
         detectedLanguage: 'en',
@@ -100,7 +101,7 @@ class LanguageHandler {
         translatedText
       };
     } catch (error) {
-      console.error('Error processing document extraction:', error);
+      logger.error('Error processing document extraction:', error);
       throw error;
     }
   }
@@ -121,7 +122,7 @@ class LanguageHandler {
         ? result.rows[0].preferred_language 
         : 'en';  // Default to English
     } catch (error) {
-      console.error('Error fetching user language preference:', error);
+      logger.error('Error fetching user language preference:', error);
       return 'en';  // Default to English in case of error
     }
   }
@@ -141,7 +142,7 @@ class LanguageHandler {
       
       return true;
     } catch (error) {
-      console.error('Error updating user language preference:', error);
+      logger.error('Error updating user language preference:', error);
       return false;
     }
   }
@@ -170,7 +171,7 @@ class LanguageHandler {
       // Otherwise translate English text to user's language
       return await translateText(englishText, 'en', userLanguage);
     } catch (error) {
-      console.error('Error formatting user message:', error);
+      logger.error('Error formatting user message:', error);
       return englishText;  // Default to English in case of error
     }
   }
@@ -216,7 +217,7 @@ class LanguageHandler {
         extractedData
       };
     } catch (error) {
-      console.error('Error handling mixed language receipt:', error);
+      logger.error('Error handling mixed language receipt:', error);
       throw error;
     }
   }

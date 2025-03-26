@@ -1,3 +1,4 @@
+const logger = require('../core/logger-utility');
 // src/services/crossLanguageAnalytics.js
 const { Pool } = require('pg');
 const productNormalizer = require('./productNormalizer');
@@ -22,10 +23,10 @@ class CrossLanguageAnalytics {
    * @param {String} targetCurrency - Currency to standardize to
    * @returns {Promise<Object>} - Price per unit analysis
    */
-  async compareUnitPrices(productName, language, unit, targetCurrency = 'EUR') {
+  async compareUnitPrices(_productName, language, unit, targetCurrency = 'EUR') {
     try {
       // Normalize the search term
-      const normalized = await productNormalizer.normalizeProductName(productName, language);
+      const normalized = await productNormalizer.normalizeProductName(_productName, language);
       
       // Determine the quantity type from unit
       const quantityType = productNormalizer.guessQuantityTypeFromUnit(unit);
@@ -100,7 +101,7 @@ class CrossLanguageAnalytics {
       
       return {
         product: {
-          original: productName,
+          original: _productName,
           normalized: normalized.normalized,
           brand: normalized.brandRecognized ? normalized.brand : null
         },
@@ -112,7 +113,7 @@ class CrossLanguageAnalytics {
         }
       };
     } catch (error) {
-      console.error('Error comparing unit prices:', error);
+      logger.error('Error comparing unit prices:', error);
       throw error;
     }
   }
@@ -125,10 +126,10 @@ class CrossLanguageAnalytics {
    * @param {String} targetCurrency - Currency to standardize to
    * @returns {Promise<Object>} - Most expensive product analysis
    */
-  async findMostExpensiveVariant(productName, language, filters = {}, targetCurrency = 'EUR') {
+  async findMostExpensiveVariant(_productName, language, filters = {}, targetCurrency = 'EUR') {
     try {
       // Normalize the search term
-      const normalized = await productNormalizer.normalizeProductName(productName, language);
+      const normalized = await productNormalizer.normalizeProductName(_productName, language);
       
       // Build the query based on filters
       let query = `
@@ -259,7 +260,7 @@ class CrossLanguageAnalytics {
       
       return {
         product: {
-          original: productName,
+          original: _productName,
           normalized: normalized.normalized,
           brand: normalized.brandRecognized ? normalized.brand : null
         },
@@ -284,7 +285,7 @@ class CrossLanguageAnalytics {
         results: standardizedResults
       };
     } catch (error) {
-      console.error('Error finding most expensive variant:', error);
+      logger.error('Error finding most expensive variant:', error);
       throw error;
     }
   }
@@ -296,10 +297,10 @@ class CrossLanguageAnalytics {
    * @param {Object} filters - Additional filters (category, date range, etc.)
    * @returns {Promise<Array>} - Similar products found
    */
-  async findSimilarProducts(productName, language, filters = {}) {
+  async findSimilarProducts(_productName, language, filters = {}) {
     try {
       // Normalize the search term
-      const normalized = await productNormalizer.normalizeProductName(productName, language);
+      const normalized = await productNormalizer.normalizeProductName(_productName, language);
       
       // Base query
       let query = `
@@ -326,7 +327,7 @@ class CrossLanguageAnalytics {
       const params = [
         normalized.normalized,
         language,
-        productName
+        _productName
       ];
       
       let paramIndex = 4;
@@ -383,7 +384,7 @@ class CrossLanguageAnalytics {
       const result = await pool.query(query, params);
       return result.rows;
     } catch (error) {
-      console.error('Error finding similar products:', error);
+      logger.error('Error finding similar products:', error);
       throw error;
     }
   }
@@ -395,10 +396,10 @@ class CrossLanguageAnalytics {
    * @param {Object} filters - Additional filters (timeframe, etc.)
    * @returns {Promise<Object>} - Price trend analysis
    */
-  async analyzeProductPriceTrend(productName, language, filters = {}) {
+  async analyzeProductPriceTrend(_productName, language, filters = {}) {
     try {
       // Normalize the search term
-      const normalized = await productNormalizer.normalizeProductName(productName, language);
+      const normalized = await productNormalizer.normalizeProductName(_productName, language);
       
       // Query for price trends
       const query = `
@@ -434,7 +435,7 @@ class CrossLanguageAnalytics {
       
       return {
         product: {
-          original: productName,
+          original: _productName,
           normalized: normalized.normalized,
           brand: normalized.brandRecognized ? normalized.brand : null
         },
@@ -445,7 +446,7 @@ class CrossLanguageAnalytics {
         }
       };
     } catch (error) {
-      console.error('Error analyzing product price trend:', error);
+      logger.error('Error analyzing product price trend:', error);
       throw error;
     }
   }
@@ -456,10 +457,10 @@ class CrossLanguageAnalytics {
    * @param {String} language - Language of the search term
    * @returns {Promise<Object>} - Regional price analysis
    */
-  async findRegionalPriceVariations(productName, language) {
+  async findRegionalPriceVariations(_productName, language) {
     try {
       // Normalize the search term
-      const normalized = await productNormalizer.normalizeProductName(productName, language);
+      const normalized = await productNormalizer.normalizeProductName(_productName, language);
       
       // Query for regional variations
       const query = `
@@ -486,14 +487,14 @@ class CrossLanguageAnalytics {
       
       return {
         product: {
-          original: productName,
+          original: _productName,
           normalized: normalized.normalized,
           brand: normalized.brandRecognized ? normalized.brand : null
         },
         regionalVariations: result.rows
       };
     } catch (error) {
-      console.error('Error finding regional price variations:', error);
+      logger.error('Error finding regional price variations:', error);
       throw error;
     }
   }
@@ -518,7 +519,7 @@ class CrossLanguageAnalytics {
       
       // Format the top result
       const topResult = analysisResult.results[0];
-      const productName = topResult.product_name_original || topResult.product_name;
+      const _productName = topResult.product_name_original || topResult.product_name;
       const currency = analysisResult.targetCurrency || topResult.standardized_currency || topResult.currency || 'EUR';
       
       let response;
@@ -602,7 +603,7 @@ class CrossLanguageAnalytics {
       
       return response;
     } catch (error) {
-      console.error('Error generating comparison response:', error);
+      logger.error('Error generating comparison response:', error);
       
       // Fallback response
       const fallbackMsg = 'I found some product matches but had trouble formatting the results.';

@@ -1,3 +1,4 @@
+const logger = require('../core/logger-utility');
 // src/services/currencyConverter.js
 const { Pool } = require('pg');
 const axios = require('axios');
@@ -114,7 +115,7 @@ class CurrencyConverter {
         conversionDate: date
       };
     } catch (error) {
-      console.error('Error converting currency:', error);
+      logger.error('Error converting currency:', error);
       throw error;
     }
   }
@@ -182,7 +183,7 @@ class CurrencyConverter {
       
       return null;
     } catch (error) {
-      console.error('Error fetching exchange rate:', error);
+      logger.error('Error fetching exchange rate:', error);
       return null;
     }
   }
@@ -214,7 +215,7 @@ class CurrencyConverter {
       
       return true;
     } catch (error) {
-      console.error('Error storing exchange rate:', error);
+      logger.error('Error storing exchange rate:', error);
       return false;
     }
   }
@@ -256,7 +257,7 @@ class CurrencyConverter {
       // If no defaults found, return EUR as ultimate fallback
       return 'EUR';
     } catch (error) {
-      console.error('Error getting default currency:', error);
+      logger.error('Error getting default currency:', error);
       return 'EUR'; // Default fallback
     }
   }
@@ -283,7 +284,7 @@ class CurrencyConverter {
       
       return true;
     } catch (error) {
-      console.error('Error setting default currency:', error);
+      logger.error('Error setting default currency:', error);
       return false;
     }
   }
@@ -317,7 +318,7 @@ class CurrencyConverter {
       // Fall back to global default
       return this.getDefaultCurrency();
     } catch (error) {
-      console.error('Error getting user currency:', error);
+      logger.error('Error getting user currency:', error);
       return 'EUR'; // Default fallback
     }
   }
@@ -362,7 +363,7 @@ class CurrencyConverter {
       
       return standardizedItems;
     } catch (error) {
-      console.error('Error standardizing amounts:', error);
+      logger.error('Error standardizing amounts:', error);
       
       // Return original items with null standardization if error
       return items.map(item => ({

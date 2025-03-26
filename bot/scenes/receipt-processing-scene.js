@@ -1,3 +1,4 @@
+let userId;
 // src/scenes/receiptProcessingScene.js
 const { Scenes, Markup } = require('telegraf');
 const { Pool } = require('pg');
@@ -17,11 +18,11 @@ const receiptProcessingScene = new Scenes.WizardScene(
   // Step 1: Handle photo/document upload
   async (ctx) => {
     try {
-      const userId = ctx.from.id.toString();
-      const userLanguage = await getUserLanguage(userId);
+      const _userId = ctx.from.id.toString();
+      const userLanguage = await getUserLanguage(_userId);
       
       // Create session data
-      ctx.scene.session.userId = userId;
+      ctx.scene.session._userId = userId;
       ctx.scene.session.userLanguage = userLanguage;
       
       // Show processing message
@@ -75,7 +76,7 @@ const receiptProcessingScene = new Scenes.WizardScene(
       
       // Generate a unique filename
       const timestamp = Date.now();
-      const filename = `receipt_${userId}_${timestamp}.jpg`;
+      const filename = `receipt_${_userId}_${timestamp}.jpg`;
       const filePath = path.join(uploadsDir, filename);
       
       // Save file
@@ -87,7 +88,7 @@ const receiptProcessingScene = new Scenes.WizardScene(
       // Process receipt using receipt processor service
       try {
         const processingResult = await receiptProcessor.processReceiptToExpense(
-          userId,
+          _userId,
           buffer,
           'user_upload'
         );
@@ -200,7 +201,7 @@ const receiptProcessingScene = new Scenes.WizardScene(
   // Step 2: Handle manual entry or review decision
   async (ctx) => {
     try {
-      const userId = ctx.scene.session.userId;
+      const _userId = ctx.scene.session._userId;
       const userLanguage = ctx.scene.session.userLanguage;
       
       // Check if we're in review stage
@@ -298,7 +299,7 @@ const receiptProcessingScene = new Scenes.WizardScene(
   // Step 3: Handle corrections
   async (ctx) => {
     try {
-      const userId = ctx.scene.session.userId;
+      const _userId = ctx.scene.session._userId;
       const userLanguage = ctx.scene.session.userLanguage;
       
       // Check if done correcting
@@ -389,7 +390,7 @@ const receiptProcessingScene = new Scenes.WizardScene(
         return ctx.wizard.next();
       } else if (fieldToCorrect === 'Category' || fieldToCorrect === 'Категория') {
         // Get categories
-        const categories = await getCategories(userId);
+        const categories = await getCategories(_userId);
         
         // Create keyboard with categories
         const keyboard = [];
@@ -474,7 +475,7 @@ const receiptProcessingScene = new Scenes.WizardScene(
   // Step 4: Apply the correction
   async (ctx) => {
     try {
-      const userId = ctx.scene.session.userId;
+      const _userId = ctx.scene.session._userId;
       const userLanguage = ctx.scene.session.userLanguage;
       const currentCorrection = ctx.scene.session.currentCorrection;
       
@@ -608,14 +609,14 @@ const receiptProcessingScene = new Scenes.WizardScene(
  * @param {String} userId - User ID
  * @returns {Promise<Array>} - List of categories
  */
-async function getCategories(userId) {
+async function getCategories(_userId) {
   try {
     const result = await pool.query(`
       SELECT category_id, name, icon
       FROM categories
       WHERE is_system = true OR user_id = $1
       ORDER BY name
-    `, [userId]);
+    `, [_userId]);
     
     return result.rows;
   } catch (error) {

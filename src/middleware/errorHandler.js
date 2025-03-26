@@ -1,51 +1,53 @@
-const { logger } = require('../utils/logger');
+let next;
+let res;
+const { _logger } = require('../utils/logger');
 const errorMonitoring = require('../services/monitoring/error-monitoring-service');
 const {
   AppError,
   // Database Errors
-  DatabaseError,
-  DatabaseConnectionError,
-  DatabaseQueryError,
-  DatabaseTransactionError,
+  _DatabaseError,
+  _DatabaseConnectionError,
+  _DatabaseQueryError,
+  _DatabaseTransactionError,
   // Validation Errors
-  ValidationError,
-  InputValidationError,
-  SchemaValidationError,
-  CurrencyValidationError,
-  DateValidationError,
+  _ValidationError,
+  _InputValidationError,
+  _SchemaValidationError,
+  _CurrencyValidationError,
+  _DateValidationError,
   // Authentication & Authorization Errors
-  AuthenticationError,
-  TokenError,
-  TokenExpiredError,
-  InvalidCredentialsError,
-  AuthorizationError,
-  InsufficientPermissionsError,
-  ResourceAccessError,
+  _AuthenticationError,
+  _TokenError,
+  _TokenExpiredError,
+  _InvalidCredentialsError,
+  _AuthorizationError,
+  _InsufficientPermissionsError,
+  _ResourceAccessError,
   // Resource Errors
   NotFoundError,
-  ResourceConflictError,
-  DuplicateResourceError,
+  _ResourceConflictError,
+  _DuplicateResourceError,
   // External Service Errors
-  ExternalServiceError,
-  APIError,
-  ServiceUnavailableError,
+  _ExternalServiceError,
+  _APIError,
+  _ServiceUnavailableError,
   // Rate Limiting Errors
-  RateLimitError,
-  RateLimitExceededError,
+  _RateLimitError,
+  _RateLimitExceededError,
   // Business Logic Errors
   BusinessLogicError,
-  InvalidOperationError,
-  StateTransitionError,
+  _InvalidOperationError,
+  _StateTransitionError,
   // File Processing Errors
-  FileProcessingError,
-  FileUploadError,
-  FileValidationError,
-  FileSizeError,
-  FileTypeError
+  _FileProcessingError,
+  _FileUploadError,
+  _FileValidationError,
+  _FileSizeError,
+  _FileTypeError
 } = require('../utils/errors/AppError');
 
 // Error handler middleware
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, _res, _next) => {
   // Prepare error context
   const errorContext = {
     path: req.path,
@@ -63,12 +65,12 @@ const errorHandler = (err, req, res, next) => {
 
   // If it's our custom error, send the formatted response
   if (err instanceof AppError) {
-    return res.status(err.statusCode).json(err.toJSON());
+    return _res.status(err.statusCode).json(err.toJSON());
   }
 
   // Handle specific known errors
   if (err.name === 'ValidationError') {
-    return res.status(400).json({
+    return _res.status(400).json({
       status: 'error',
       code: 'VALIDATION_ERROR',
       message: err.message,
@@ -78,7 +80,7 @@ const errorHandler = (err, req, res, next) => {
 
   // Handle JWT errors
   if (err.name === 'JsonWebTokenError') {
-    return res.status(401).json({
+    return _res.status(401).json({
       status: 'error',
       code: 'INVALID_TOKEN',
       message: 'Invalid token provided',
@@ -87,7 +89,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.name === 'TokenExpiredError') {
-    return res.status(401).json({
+    return _res.status(401).json({
       status: 'error',
       code: 'TOKEN_EXPIRED',
       message: 'Token has expired',
@@ -97,7 +99,7 @@ const errorHandler = (err, req, res, next) => {
 
   // Handle database errors
   if (err.code === '23505') { // Unique violation
-    return res.status(409).json({
+    return _res.status(409).json({
       status: 'error',
       code: 'DUPLICATE_ENTRY',
       message: 'Resource already exists',
@@ -106,7 +108,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.code === '23503') { // Foreign key violation
-    return res.status(400).json({
+    return _res.status(400).json({
       status: 'error',
       code: 'FOREIGN_KEY_VIOLATION',
       message: 'Invalid reference to related resource',
@@ -115,7 +117,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.code === '42P01') { // Undefined table
-    return res.status(500).json({
+    return _res.status(500).json({
       status: 'error',
       code: 'DATABASE_ERROR',
       message: 'Database table not found',
@@ -124,7 +126,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.code === '28000') { // Invalid input syntax
-    return res.status(400).json({
+    return _res.status(400).json({
       status: 'error',
       code: 'DATABASE_ERROR',
       message: 'Invalid input syntax',
@@ -134,7 +136,7 @@ const errorHandler = (err, req, res, next) => {
 
   // Handle file upload errors
   if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({
+    return _res.status(413).json({
       status: 'error',
       code: 'FILE_SIZE_ERROR',
       message: 'File size exceeds limit',
@@ -143,7 +145,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.code === 'LIMIT_FILE_COUNT') {
-    return res.status(413).json({
+    return _res.status(413).json({
       status: 'error',
       code: 'FILE_COUNT_ERROR',
       message: 'Too many files uploaded',
@@ -152,7 +154,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-    return res.status(400).json({
+    return _res.status(400).json({
       status: 'error',
       code: 'FILE_TYPE_ERROR',
       message: 'Unexpected file type',
@@ -162,7 +164,7 @@ const errorHandler = (err, req, res, next) => {
 
   // Handle rate limiting errors
   if (err.code === 'RATE_LIMIT_EXCEEDED') {
-    return res.status(429).json({
+    return _res.status(429).json({
       status: 'error',
       code: 'RATE_LIMIT_ERROR',
       message: 'Too many requests',
@@ -172,7 +174,7 @@ const errorHandler = (err, req, res, next) => {
 
   // Handle network errors
   if (err.code === 'ECONNREFUSED') {
-    return res.status(503).json({
+    return _res.status(503).json({
       status: 'error',
       code: 'SERVICE_UNAVAILABLE',
       message: 'Service temporarily unavailable',
@@ -181,7 +183,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.code === 'ETIMEDOUT') {
-    return res.status(504).json({
+    return _res.status(504).json({
       status: 'error',
       code: 'GATEWAY_TIMEOUT',
       message: 'Request timed out',
@@ -203,12 +205,12 @@ const errorHandler = (err, req, res, next) => {
 };
 
 // Async handler wrapper to catch async errors
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
+const asyncHandler = (fn) => (req, _res, _next) => {
+  Promise.resolve(fn(req, _res, _next)).catch(_next);
 };
 
 // Not found handler
-const notFoundHandler = (req, res, next) => {
+const notFoundHandler = (req, _res, _next) => {
   const error = new NotFoundError(`Route ${req.originalUrl} not found`);
   errorMonitoring.captureError(error, {
     path: req.path,
@@ -218,7 +220,7 @@ const notFoundHandler = (req, res, next) => {
 };
 
 // Method not allowed handler
-const methodNotAllowedHandler = (req, res, next) => {
+const methodNotAllowedHandler = (req, _res, _next) => {
   const error = new BusinessLogicError(`Method ${req.method} not allowed for ${req.originalUrl}`);
   errorMonitoring.captureError(error, {
     path: req.path,

@@ -1,9 +1,18 @@
+const logger = require('../core/logger-utility');
 // src/handlers/expenseManagement.js
 const { Markup } = require('telegraf');
 const expenseManager = require('../services/expenseManager');
-const { detectLanguage } = require('../services/languageDetector');
+const { _detectLanguage } = require('../services/languageDetector');
 const { translateText } = require('../services/translator');
 const { getUserLanguage } = require('../services/userManager');
+const { pool } = require('../../config/database');
+const { userLanguage } = require('../../services/localization/i18n-service');
+
+// Add these declarations at the beginning of the file or function scope
+let expense;
+let currentDate;
+let amount;
+let datePattern;
 
 /**
  * Handle /list command to show recent expenses
@@ -20,7 +29,7 @@ async function handleListCommand(ctx) {
     
     if (expenses.length === 0) {
       const noExpensesMsg = userLanguage === 'en' 
-        ? "You don't have any expenses yet. Use /add to add your first expense!" 
+        ? "You don't have any expenses yet. Use /add to add your first _expense!" 
         : await translateText("You don't have any expenses yet. Use /add to add your first expense!", 'en', userLanguage);
       
       return ctx.reply(noExpensesMsg);
@@ -34,27 +43,27 @@ async function handleListCommand(ctx) {
     // Create inline keyboard for expense management
     const inlineKeyboard = [];
     
-    for (const expense of expenses) {
-      const formattedDate = new Date(expense.expense_date).toLocaleDateString(
+    for (const _expense of expenses) {
+      const formattedDate = new Date(_expense.expense_date).toLocaleDateString(
         userLanguage === 'ru' ? 'ru-RU' : 'en-US'
       );
       
-      const expenseInfo = `${formattedDate}: ${expense.amount} ${expense.currency} - ${expense.category_name || 'Uncategorized'}`;
+      const expenseInfo = `${formattedDate}: ${_expense.amount} ${_expense.currency} - ${_expense.category_name || 'Uncategorized'}`;
       message += `• ${expenseInfo}\n`;
       
       // Add view/edit/delete buttons for each expense
       inlineKeyboard.push([
         Markup.button.callback(
           userLanguage === 'en' ? 'View' : await translateText('View', 'en', userLanguage), 
-          `view_expense:${expense.expense_id}`
+          `view_expense:${_expense.expense_id}`
         ),
         Markup.button.callback(
           userLanguage === 'en' ? 'Edit' : await translateText('Edit', 'en', userLanguage), 
-          `edit_expense:${expense.expense_id}`
+          `edit_expense:${_expense.expense_id}`
         ),
         Markup.button.callback(
           userLanguage === 'en' ? 'Delete' : await translateText('Delete', 'en', userLanguage), 
-          `delete_expense:${expense.expense_id}`
+          `delete_expense:${_expense.expense_id}`
         )
       ]);
     }
@@ -72,7 +81,7 @@ async function handleListCommand(ctx) {
     // Send the message with inline keyboard
     return ctx.reply(message, Markup.inlineKeyboard(inlineKeyboard));
   } catch (error) {
-    console.error('Error in list command:', error);
+    logger.error('Error in list command:', error);
     return ctx.reply('Sorry, there was an error listing your expenses. Please try again.');
   }
 }
@@ -88,11 +97,11 @@ async function handleViewExpense(ctx) {
     // Get user's preferred language
     const userLanguage = await getUserLanguage(userId);
     
-    // Get expense details
-    const expense = await expenseManager.getExpenseById(expenseId, userId);
+    // Get _expense details
+    const _expense = await expenseManager.getExpenseById(expenseId, userId);
     
     // Format expense for display
-    const formattedExpense = await expenseManager.formatExpenseForDisplay(expense, userLanguage);
+    const formattedExpense = await expenseManager.formatExpenseForDisplay(_expense, userLanguage);
     
     // Create inline keyboard for actions
     const inlineKeyboard = [
@@ -127,7 +136,7 @@ async function handleViewExpense(ctx) {
     // Send the message with inline keyboard
     return ctx.editMessageText(formattedExpense, Markup.inlineKeyboard(inlineKeyboard));
   } catch (error) {
-    console.error('Error viewing expense:', error);
+    logger.error('Error viewing _expense:', error);
     return ctx.answerCbQuery('Sorry, there was an error viewing this expense.');
   }
 }
@@ -143,8 +152,8 @@ async function handleDeleteExpense(ctx) {
     // Get user's preferred language
     const userLanguage = await getUserLanguage(userId);
     
-    // Get expense details for confirmation
-    const expense = await expenseManager.getExpenseById(expenseId, userId);
+    // Get _expense details for confirmation
+    const _expense = await expenseManager.getExpenseById(expenseId, userId);
     
     // Format basic expense info for confirmation
     const amount = expense.amount;
@@ -167,7 +176,7 @@ async function handleDeleteExpense(ctx) {
                        `Дата: ${date}\n` +
                        `Категория: ${category}`;
     } else {
-      const engMsg = `Are you sure you want to delete this expense?\n\n` +
+      const engMsg = `Are you sure you want to delete this _expense?\n\n` +
                     `Amount: ${amount} ${currency}\n` +
                     `Date: ${date}\n` +
                     `Category: ${category}`;
@@ -191,7 +200,7 @@ async function handleDeleteExpense(ctx) {
     // Send confirmation message
     return ctx.editMessageText(confirmationMsg, Markup.inlineKeyboard(confirmKeyboard));
   } catch (error) {
-    console.error('Error preparing expense deletion:', error);
+    logger.error('Error preparing _expense deletion:', error);
     return ctx.answerCbQuery('Sorry, there was an error preparing to delete this expense.');
   }
 }
@@ -207,7 +216,7 @@ async function handleConfirmDelete(ctx) {
     // Get user's preferred language
     const userLanguage = await getUserLanguage(userId);
     
-    // Delete the expense
+    // Delete the _expense
     await expenseManager.deleteExpense(expenseId, userId);
     
     // Success message
@@ -224,7 +233,7 @@ async function handleConfirmDelete(ctx) {
     await ctx.answerCbQuery(successMsg);
     return handleListCommand(ctx);
   } catch (error) {
-    console.error('Error deleting expense:', error);
+    logger.error('Error deleting _expense:', error);
     return ctx.answerCbQuery('Sorry, there was an error deleting this expense.');
   }
 }
@@ -240,40 +249,40 @@ async function handleEditExpense(ctx) {
     // Get user's preferred language
     const userLanguage = await getUserLanguage(userId);
     
-    // Get expense details
-    const expense = await expenseManager.getExpenseById(expenseId, userId);
+    // Get _expense details
+    const _expense = await expenseManager.getExpenseById(expenseId, userId);
     
     // Save in session for editing
     ctx.session = ctx.session || {};
     ctx.session.editingExpense = {
       id: expenseId,
-      expense: expense,
+      _expense: expense,
       field: null // No field selected yet
     };
     
     // Create message asking what to edit
     let message;
     if (userLanguage === 'en') {
-      message = `What would you like to edit for this expense?\n\n` +
-               `Amount: ${expense.amount} ${expense.currency}\n` +
-               `Date: ${new Date(expense.expense_date).toLocaleDateString('en-US')}\n` +
-               `Category: ${expense.category_name || 'Uncategorized'}\n` +
-               (expense.vendor_name ? `Vendor: ${expense.vendor_name}\n` : '') +
-               (expense.description ? `Description: ${expense.description}\n` : '');
+      message = `What would you like to edit for this _expense?\n\n` +
+               `Amount: ${expense.amount} ${_expense.currency}\n` +
+               `Date: ${new Date(_expense.expense_date).toLocaleDateString('en-US')}\n` +
+               `Category: ${_expense.category_name || 'Uncategorized'}\n` +
+               (expense.vendor_name ? `Vendor: ${_expense.vendor_name}\n` : '') +
+               (expense.description ? `Description: ${_expense.description}\n` : '');
     } else if (userLanguage === 'ru') {
       message = `Что бы вы хотели изменить в этом расходе?\n\n` +
-               `Сумма: ${expense.amount} ${expense.currency}\n` +
-               `Дата: ${new Date(expense.expense_date).toLocaleDateString('ru-RU')}\n` +
-               `Категория: ${expense.category_name || 'Без категории'}\n` +
-               (expense.vendor_name ? `Продавец: ${expense.vendor_name}\n` : '') +
-               (expense.description ? `Описание: ${expense.description}\n` : '');
+               `Сумма: ${_expense.amount} ${_expense.currency}\n` +
+               `Дата: ${new Date(_expense.expense_date).toLocaleDateString('ru-RU')}\n` +
+               `Категория: ${_expense.category_name || 'Без категории'}\n` +
+               (expense.vendor_name ? `Продавец: ${_expense.vendor_name}\n` : '') +
+               (expense.description ? `Описание: ${_expense.description}\n` : '');
     } else {
-      const engMsg = `What would you like to edit for this expense?\n\n` +
-                    `Amount: ${expense.amount} ${expense.currency}\n` +
-                    `Date: ${new Date(expense.expense_date).toLocaleDateString('en-US')}\n` +
-                    `Category: ${expense.category_name || 'Uncategorized'}\n` +
-                    (expense.vendor_name ? `Vendor: ${expense.vendor_name}\n` : '') +
-                    (expense.description ? `Description: ${expense.description}\n` : '');
+      const engMsg = `What would you like to edit for this _expense?\n\n` +
+                    `Amount: ${expense.amount} ${_expense.currency}\n` +
+                    `Date: ${new Date(_expense.expense_date).toLocaleDateString('en-US')}\n` +
+                    `Category: ${_expense.category_name || 'Uncategorized'}\n` +
+                    (expense.vendor_name ? `Vendor: ${_expense.vendor_name}\n` : '') +
+                    (expense.description ? `Description: ${_expense.description}\n` : '');
       message = await translateText(engMsg, 'en', userLanguage);
     }
     
@@ -334,7 +343,7 @@ async function handleEditExpense(ctx) {
     // Send edit options
     return ctx.editMessageText(message, Markup.inlineKeyboard(editKeyboard));
   } catch (error) {
-    console.error('Error preparing expense edit:', error);
+    logger.error('Error preparing _expense edit:', error);
     return ctx.answerCbQuery('Sorry, there was an error preparing to edit this expense.');
   }
 }
@@ -350,13 +359,13 @@ async function handleEditField(ctx) {
     // Get user's preferred language
     const userLanguage = await getUserLanguage(userId);
     
-    // Get expense if not in session
+    // Get _expense if not in session
     if (!ctx.session?.editingExpense || ctx.session.editingExpense.id !== expenseId) {
-      const expense = await expenseManager.getExpenseById(expenseId, userId);
+      const _expense = await expenseManager.getExpenseById(expenseId, userId);
       ctx.session = ctx.session || {};
       ctx.session.editingExpense = {
         id: expenseId,
-        expense: expense
+        _expense: expense
       };
     }
     
@@ -365,22 +374,22 @@ async function handleEditField(ctx) {
     
     // Create prompt based on field
     let prompt;
-    const expense = ctx.session.editingExpense.expense;
+    const _expense = ctx.session.editingExpense.expense;
     
     switch (field) {
       case 'amount':
         if (userLanguage === 'en') {
-          prompt = `Current amount: ${expense.amount} ${expense.currency}\n\nPlease enter the new amount:`;
+          prompt = `Current amount: ${_expense.amount} ${_expense.currency}\n\nPlease enter the new amount:`;
         } else if (userLanguage === 'ru') {
-          prompt = `Текущая сумма: ${expense.amount} ${expense.currency}\n\nПожалуйста, введите новую сумму:`;
+          prompt = `Текущая сумма: ${_expense.amount} ${_expense.currency}\n\nПожалуйста, введите новую сумму:`;
         } else {
-          const engPrompt = `Current amount: ${expense.amount} ${expense.currency}\n\nPlease enter the new amount:`;
+          const engPrompt = `Current amount: ${_expense.amount} ${_expense.currency}\n\nPlease enter the new amount:`;
           prompt = await translateText(engPrompt, 'en', userLanguage);
         }
         break;
         
-      case 'date':
-        const currentDate = new Date(expense.expense_date).toISOString().split('T')[0];
+      case 'date': {
+        currentDate = new Date(expense.expense_date).toISOString().split('T')[0];
         if (userLanguage === 'en') {
           prompt = `Current date: ${currentDate}\n\nPlease enter the new date (YYYY-MM-DD):`;
         } else if (userLanguage === 'ru') {
@@ -390,7 +399,8 @@ async function handleEditField(ctx) {
           prompt = await translateText(engPrompt, 'en', userLanguage);
         }
         break;
-        
+      }
+      
       case 'category':
         // For category, we'll provide a list of categories to choose from
         // This will be handled separately
@@ -398,22 +408,22 @@ async function handleEditField(ctx) {
         
       case 'vendor':
         if (userLanguage === 'en') {
-          prompt = `Current vendor: ${expense.vendor_name || 'None'}\n\nPlease enter the new vendor name:`;
+          prompt = `Current vendor: ${_expense.vendor_name || 'None'}\n\nPlease enter the new vendor name:`;
         } else if (userLanguage === 'ru') {
-          prompt = `Текущий продавец: ${expense.vendor_name || 'Нет'}\n\nПожалуйста, введите новое название продавца:`;
+          prompt = `Текущий продавец: ${_expense.vendor_name || 'Нет'}\n\nПожалуйста, введите новое название продавца:`;
         } else {
-          const engPrompt = `Current vendor: ${expense.vendor_name || 'None'}\n\nPlease enter the new vendor name:`;
+          const engPrompt = `Current vendor: ${_expense.vendor_name || 'None'}\n\nPlease enter the new vendor name:`;
           prompt = await translateText(engPrompt, 'en', userLanguage);
         }
         break;
         
       case 'description':
         if (userLanguage === 'en') {
-          prompt = `Current description: ${expense.description || 'None'}\n\nPlease enter the new description:`;
+          prompt = `Current description: ${_expense.description || 'None'}\n\nPlease enter the new description:`;
         } else if (userLanguage === 'ru') {
-          prompt = `Текущее описание: ${expense.description || 'Нет'}\n\nПожалуйста, введите новое описание:`;
+          prompt = `Текущее описание: ${_expense.description || 'Нет'}\n\nПожалуйста, введите новое описание:`;
         } else {
-          const engPrompt = `Current description: ${expense.description || 'None'}\n\nPlease enter the new description:`;
+          const engPrompt = `Current description: ${_expense.description || 'None'}\n\nPlease enter the new description:`;
           prompt = await translateText(engPrompt, 'en', userLanguage);
         }
         break;
@@ -432,7 +442,7 @@ async function handleEditField(ctx) {
       ]
     ]));
   } catch (error) {
-    console.error('Error handling field edit:', error);
+    logger.error('Error handling field edit:', error);
     return ctx.answerCbQuery('Sorry, there was an error preparing to edit this field.');
   }
 }
@@ -447,7 +457,7 @@ async function handleFieldUpdate(ctx) {
   }
   
   const userId = ctx.from.id.toString();
-  const { id: expenseId, field, expense } = ctx.session.editingExpense;
+  const { id: expenseId, field, _expense } = ctx.session.editingExpense;
   const newValue = ctx.message.text;
   
   try {
@@ -458,8 +468,8 @@ async function handleFieldUpdate(ctx) {
     const updates = {};
     
     switch (field) {
-      case 'amount':
-        const amount = parseFloat(newValue);
+      case 'amount': {
+        amount = parseFloat(newValue);
         if (isNaN(amount) || amount <= 0) {
           const errorMsg = userLanguage === 'en' 
             ? 'Please enter a valid positive number for the amount.' 
@@ -471,9 +481,10 @@ async function handleFieldUpdate(ctx) {
         }
         updates.amount = amount;
         break;
-        
-      case 'date':
-        const datePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+      }
+      
+      case 'date': {
+        datePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
         if (!datePattern.test(newValue)) {
           const errorMsg = userLanguage === 'en' 
             ? 'Please enter the date in YYYY-MM-DD format.' 
@@ -485,7 +496,8 @@ async function handleFieldUpdate(ctx) {
         }
         updates.expense_date = newValue;
         break;
-        
+      }
+      
       case 'vendor':
         // No special validation for vendor
         updates.vendor_name = newValue;
@@ -501,7 +513,7 @@ async function handleFieldUpdate(ctx) {
     }
     
     // Update the expense
-    const updatedExpense = await expenseManager.updateExpense(expenseId, userId, updates);
+    const _updatedExpense = await expenseManager.updateExpense(expenseId, userId, updates);
     
     // Clear edit session
     delete ctx.session.editingExpense;
@@ -519,7 +531,7 @@ async function handleFieldUpdate(ctx) {
     await ctx.reply(successMsg);
     
     // Show updated expense
-    const formattedExpense = await expenseManager.formatExpenseForDisplay(updatedExpense, userLanguage);
+    const formattedExpense = await expenseManager.formatExpenseForDisplay(_updatedExpense, userLanguage);
     
     return ctx.reply(formattedExpense, Markup.inlineKeyboard([
       [
@@ -534,7 +546,7 @@ async function handleFieldUpdate(ctx) {
       ]
     ]));
   } catch (error) {
-    console.error('Error updating expense field:', error);
+    logger.error('Error updating _expense field:', error);
     
     const errorMsg = userLanguage === 'en' 
       ? 'Sorry, there was an error updating the expense. Please try again.' 
@@ -568,11 +580,11 @@ async function handleCategorySelection(ctx) {
     // Create prompt
     let prompt;
     if (userLanguage === 'en') {
-      prompt = 'Select a category for this expense:';
+      prompt = 'Select a category for this _expense:';
     } else if (userLanguage === 'ru') {
       prompt = 'Выберите категорию для этого расхода:';
     } else {
-      prompt = await translateText('Select a category for this expense:', 'en', userLanguage);
+      prompt = await translateText('Select a category for this _expense:', 'en', userLanguage);
     }
     
     // Create keyboard with categories
@@ -608,7 +620,7 @@ async function handleCategorySelection(ctx) {
     // Send category selection
     return ctx.editMessageText(prompt, Markup.inlineKeyboard(keyboard));
   } catch (error) {
-    console.error('Error handling category selection:', error);
+    logger.error('Error handling category selection:', error);
     return ctx.answerCbQuery('Sorry, there was an error loading categories.');
   }
 }
@@ -624,8 +636,8 @@ async function handleSetCategory(ctx) {
     // Get user's preferred language
     const userLanguage = await getUserLanguage(userId);
     
-    // Update the expense with new category
-    const updatedExpense = await expenseManager.updateExpense(expenseId, userId, {
+    // Update the _expense with new category
+    const _updatedExpense = await expenseManager.updateExpense(expenseId, userId, {
       category_id: categoryId
     });
     
@@ -645,7 +657,7 @@ async function handleSetCategory(ctx) {
       } 
     });
   } catch (error) {
-    console.error('Error setting category:', error);
+    logger.error('Error setting category:', error);
     return ctx.answerCbQuery('Sorry, there was an error updating the category.');
   }
 }
@@ -661,8 +673,8 @@ async function handleViewItems(ctx) {
     // Get user's preferred language
     const userLanguage = await getUserLanguage(userId);
     
-    // Get expense with items
-    const expense = await expenseManager.getExpenseById(expenseId, userId);
+    // Get _expense with items
+    const _expense = await expenseManager.getExpenseById(expenseId, userId);
     
     if (!expense.items || expense.items.length === 0) {
       return ctx.answerCbQuery(
@@ -675,11 +687,11 @@ async function handleViewItems(ctx) {
     // Create message with items
     let message;
     if (userLanguage === 'en') {
-      message = `Items for expense on ${new Date(expense.expense_date).toLocaleDateString()}:\n\n`;
+      message = `Items for _expense on ${new Date(expense.expense_date).toLocaleDateString()}:\n\n`;
     } else if (userLanguage === 'ru') {
-      message = `Позиции для расхода от ${new Date(expense.expense_date).toLocaleDateString('ru-RU')}:\n\n`;
+      message = `Позиции для расхода от ${new Date(_expense.expense_date).toLocaleDateString('ru-RU')}:\n\n`;
     } else {
-      const engMsg = `Items for expense on ${new Date(expense.expense_date).toLocaleDateString()}:\n\n`;
+      const engMsg = `Items for _expense on ${new Date(expense.expense_date).toLocaleDateString()}:\n\n`;
       message = await translateText(engMsg, 'en', userLanguage);
     }
     
@@ -687,7 +699,7 @@ async function handleViewItems(ctx) {
     const inlineKeyboard = [];
     
     for (const item of expense.items) {
-      const itemText = `${item.product_name}: ${item.amount} ${expense.currency}` +
+      const itemText = `${item.product_name}: ${item.amount} ${_expense.currency}` +
                      (item.quantity > 1 ? ` (${item.quantity} x ${item.unit_price})` : '');
       
       message += `• ${itemText}\n`;
@@ -714,7 +726,7 @@ async function handleViewItems(ctx) {
     // Send the message with inline keyboard
     return ctx.editMessageText(message, Markup.inlineKeyboard(inlineKeyboard));
   } catch (error) {
-    console.error('Error viewing items:', error);
+    logger.error('Error viewing items:', error);
     return ctx.answerCbQuery('Sorry, there was an error viewing the items.');
   }
 }
@@ -772,7 +784,7 @@ async function handleDeleteItem(ctx) {
     // Send confirmation message
     return ctx.editMessageText(confirmMsg, Markup.inlineKeyboard(confirmKeyboard));
   } catch (error) {
-    console.error('Error preparing item deletion:', error);
+    logger.error('Error preparing item deletion:', error);
     return ctx.answerCbQuery('Sorry, there was an error preparing to delete this item.');
   }
 }
@@ -807,7 +819,7 @@ async function handleConfirmDeleteItem(ctx) {
       } 
     });
   } catch (error) {
-    console.error('Error deleting item:', error);
+    logger.error('Error deleting item:', error);
     return ctx.answerCbQuery('Sorry, there was an error deleting this item.');
   }
 }

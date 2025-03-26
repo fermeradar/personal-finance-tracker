@@ -1,3 +1,4 @@
+const logger = require('../core/logger-utility');
 // src/services/productNormalizer.js
 const { Pool } = require('pg');
 const { translateText } = require('./translator');
@@ -65,7 +66,7 @@ class ProductNormalizer {
       
       return result;
     } catch (error) {
-      console.error('Error normalizing product name:', error);
+      logger.error('Error normalizing product name:', error);
       // Return basic normalization (lowercase) in case of error
       return {
         original: productName,
@@ -132,7 +133,7 @@ class ProductNormalizer {
       
       return null; // No brand match found
     } catch (error) {
-      console.error('Error recognizing brand:', error);
+      logger.error('Error recognizing brand:', error);
       return null;
     }
   }
@@ -156,7 +157,7 @@ class ProductNormalizer {
       
       return result.rows[0];
     } catch (error) {
-      console.error('Error adding brand:', error);
+      logger.error('Error adding brand:', error);
       throw error;
     }
   }
@@ -284,7 +285,7 @@ class ProductNormalizer {
         };
       }
     } catch (error) {
-      console.error('Error standardizing quantity:', error);
+      logger.error('Error standardizing quantity:', error);
       return { 
         original: { value, unit }, 
         standardized: { value, unit },
@@ -427,7 +428,7 @@ class ProductNormalizer {
       
       return processedItem;
     } catch (error) {
-      console.error('Error processing product item:', error);
+      logger.error('Error processing product item:', error);
       // Return original item in case of error
       return {
         ...item,

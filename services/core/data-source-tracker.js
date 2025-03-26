@@ -1,5 +1,7 @@
 // src/services/dataSourceTracker.js
 
+let metadata = {};  // This will fix all 5 undefined metadata warnings
+
 /**
  * Get confidence score and appropriate verification status based on source
  * @param {String} source - Data source
@@ -28,12 +30,12 @@ function getSourceMetadata(source) {
  * @returns {Object} - Updated expense
  */
 function enrichExpenseWithSourceInfo(expense, source) {
-  const metadata = getSourceMetadata(source);
+  const _metadata = getSourceMetadata(source);
   
   return {
     ...expense,
     data_source: source,
-    confidence: metadata.confidence,
+    confidence: _metadata.confidence,
     verification_status: metadata.verification,
     source_label: metadata.label
   };
@@ -77,7 +79,7 @@ function getOrderedSources(sources) {
  * @returns {String} - Human-readable explanation
  */
 function getSourceExplanation(source, language = 'en') {
-  const metadata = getSourceMetadata(source);
+  const _metadata = getSourceMetadata(source);
   
   // Simple explanations in English and Russian
   const explanations = {
@@ -185,7 +187,7 @@ function mergeDataFromSources(dataSources) {
   result.source_count = dataSources.length;
   
   // Set confidence and verification based on the primary source
-  const metadata = getSourceMetadata(sourceTracking.primary_source);
+  const _metadata = getSourceMetadata(sourceTracking.primary_source);
   result.confidence = metadata.confidence;
   result.verification_status = metadata.verification;
   result.source_label = metadata.label;

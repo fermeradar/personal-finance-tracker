@@ -1,8 +1,9 @@
+let $2;
 // src/scenes/settingsScene.js
 const { Scenes, Markup } = require('telegraf');
 const { Pool } = require('pg');
 const { getUserLanguage } = require('../services/core/user-manager');
-const currencyConverter = require('../services/core/currency-conversion-service');
+const _currencyConverter = require($2);
 const { translate } = require('../services/localization/i18n-service');
 const logger = require('../utils/logger');
 
@@ -389,16 +390,16 @@ const settingsScene = new Scenes.WizardScene(
       // Handle export timeframe
       if (settingToChange === 'export_timeframe') {
         const timeframe = ctx.message.text;
-        let period;
+        let _period;
         
         if (timeframe === translate('export.timeframe.month', userLanguage)) {
-          period = 'month';
+          _period = 'month';
         } else if (timeframe === translate('export.timeframe.quarter', userLanguage)) {
-          period = 'quarter';
+          _period = 'quarter';
         } else if (timeframe === translate('export.timeframe.year', userLanguage)) {
-          period = 'year';
+          _period = 'year';
         } else if (timeframe === translate('export.timeframe.all', userLanguage)) {
-          period = 'all';
+          _period = 'all';
         } else {
           await ctx.reply(
             userLanguage === 'en'
@@ -412,7 +413,7 @@ const settingsScene = new Scenes.WizardScene(
         await ctx.reply(translate('export.processing', userLanguage));
         
         try {
-          const result = await generateExport(userId, ctx.scene.session.exportFormat, period);
+          const result = await generateExport(userId, ctx.scene.session.exportFormat, _period);
           
           if (result.success) {
             // Send file
@@ -570,9 +571,9 @@ function formatUserSettings(settings, language) {
  * @param {String} period - Time period
  * @returns {Promise<Object>} - Export result
  */
-async function generateExport(userId, format, period) {
+async function generateExport(userId, format, _period) {
   // This is a placeholder. In a real implementation, you would:
-  // 1. Query expenses based on period
+  // 1. Query expenses based on _period
   // 2. Format data according to chosen format (CSV/Excel)
   // 3. Save to file
   // 4. Return file path for sending

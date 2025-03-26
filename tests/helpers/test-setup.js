@@ -1,7 +1,8 @@
+let $2;
 const { pool } = require('../../src/config/database');
 const { hashPassword } = require('../../src/utils/auth');
 const { generateToken } = require('../../src/utils/jwt');
-const userManager = require('../../services/core/user-manager');
+const _userManager = require($2);
 
 // Common test data
 const TEST_DATA = {

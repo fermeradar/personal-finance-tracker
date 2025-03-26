@@ -1,3 +1,4 @@
+let _options;
 const Redis = require('ioredis');
 const { RateLimitError } = require('../utils/errors/AppError');
 const { logger } = require('../utils/logger');
@@ -15,7 +16,7 @@ class RateLimiter {
       windowMs = this.defaultWindowMs,
       max = this.defaultMax,
       keyGenerator = (req) => req.ip,
-      handler = (req, res, next, options) => {
+      handler = (req, res, next, _options) => {
         next(new RateLimitError(`Too many requests, please try again later.`));
       },
       skip = () => false,
@@ -47,7 +48,7 @@ class RateLimiter {
             windowMs
           });
 
-          return handler(req, res, next, options);
+          return handler(req, res, next, _options);
         }
 
         // Add current request

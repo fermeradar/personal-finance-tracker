@@ -1,18 +1,21 @@
+const logger = require('../core/logger-utility');
+let $2;
 // src/bot/index.js
 require('dotenv').config();
 const { Telegraf, session, Scenes } = require('telegraf');
 const { Pool } = require('pg');
-const path = require('path');
-const fs = require('fs');
-const axios = require('axios');
+const _path = require($2);
+const _fs = require($2);
+const _axios = require($2);
 
 // Import services
 const languageHandler = require('../services/localization/language-handling-service');
-const currencyConverter = require('../services/core/currency-conversion-service');
-const productNormalizer = require('../services/core/product-normalization-service');
-const documentSourceHandler = require('../services/core/document-source-handler');
-const expenseHandlers = require('../core/handlers/expense-management-handlers');
-const expenseDuplicateHandler = require('../core/handlers/expense-duplicate-handler');
+const _currencyConverter = require($2);
+const _productNormalizer = require($2);
+const _documentSourceHandler = require($2);
+const _expenseHandlers = require($2);
+const _expenseDuplicateHandler = require($2);
+const { looksLikeExpense, processNaturalLanguageExpense } = require('../services/expense/expense-parser');
 
 // Initialize database
 const pool = new Pool({
@@ -86,7 +89,7 @@ bot.use(async (ctx, next) => {
     
     return next();
   } catch (error) {
-    console.error('User registration middleware error:', error);
+    logger.error('User registration middleware error:', error);
     return next();
   }
 });
@@ -115,7 +118,7 @@ bot.start(async (ctx) => {
     
     // Start onboarding
     await ctx.reply(await ctx.i18n(
-      'Let\'s set up your profile. What currency would you like to use? (e.g., EUR, USD, RUB)',
+      'Let\'s set up your profile. What currency would you like to use? (_e.g., EUR, USD, RUB)',
       'Давайте настроим ваш профиль. Какую валюту вы хотели бы использовать? (например, EUR, USD, RUB)'
     ));
     
@@ -222,8 +225,8 @@ bot.on('text', async (ctx) => {
 
 // Error handling
 bot.catch((err, ctx) => {
-  console.error(`Bot error for ${ctx.updateType}`, err);
-  ctx.reply('An error occurred. Please try again later.').catch(e => {});
+  logger.error(`Bot error for ${ctx.updateType}`, err);
+  ctx.reply('An error occurred. Please try again later.').catch(_e => {});
 });
 
 /**
@@ -258,7 +261,7 @@ async function handleOnboarding(ctx) {
   const text = ctx.message.text;
   
   switch (ctx.session.onboardingStep) {
-    case 'currency':
+    case 'currency': {
       // Validate and save currency
       const currency = text.trim().toUpperCase();
       
@@ -280,13 +283,13 @@ async function handleOnboarding(ctx) {
         ctx.session.onboardingStep = 'language';
       } else {
         await ctx.reply(await ctx.i18n(
-          'Please enter a valid 3-letter currency code (e.g., EUR, USD, RUB).',
+          'Please enter a valid 3-letter currency code (_e.g., EUR, USD, RUB).',
           'Пожалуйста, введите действительный 3-буквенный код валюты (например, EUR, USD, RUB).'
         ));
       }
       break;
-      
-    case 'language':
+    }
+    case 'language': {
       // Validate and save language
       const language = text.trim().toLowerCase();
       
@@ -317,5 +320,6 @@ async function handleOnboarding(ctx) {
         ));
       }
       break;
+    }
   }
 }

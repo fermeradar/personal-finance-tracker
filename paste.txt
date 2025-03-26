@@ -1,0 +1,375 @@
+
+> personal-finance-tracker@1.0.0 lint
+> eslint . --fix
+
+
+/Users/d/projects/personal-finance-tracker/ eslint-fixer.js
+   22:5  warning  Unexpected console statement                                                      no-console
+   33:5  warning  Unexpected console statement                                                      no-console
+   42:9  error    'regex' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  142:3  warning  Unexpected console statement                                                      no-console
+  172:7  warning  Unexpected console statement                                                      no-console
+  175:5  warning  Unexpected console statement                                                      no-console
+  192:3  warning  Unexpected console statement                                                      no-console
+  193:3  warning  Unexpected console statement                                                      no-console
+  199:5  warning  Unexpected console statement                                                      no-console
+  204:1  warning  Unexpected console statement                                                      no-console
+
+/Users/d/projects/personal-finance-tracker/bot/admin-handlers.js
+    7:7   error    'fs' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  111:5   warning  Unexpected console statement                                                   no-console
+  163:5   warning  Unexpected console statement                                                   no-console
+  219:5   warning  Unexpected console statement                                                   no-console
+  282:39  error    'index' is defined but never used. Allowed unused args must match /^_/u        no-unused-vars
+  309:5   warning  Unexpected console statement                                                   no-console
+  348:5   warning  Unexpected console statement                                                   no-console
+  442:5   warning  Unexpected console statement                                                   no-console
+
+/Users/d/projects/personal-finance-tracker/bot/scenes/add-expense-scene.js
+  5:7  error  'currencyConverter' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/bot/scenes/benchmark-scene.js
+   69:13  error  'userId' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  665:9   error  Unexpected lexical declaration in case block                                       no-case-declarations
+  832:30  error  'currencyConverter' is not defined                                                 no-undef
+
+/Users/d/projects/personal-finance-tracker/bot/scenes/receipt-processing-scene.js
+  203:13  error  'userId' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  477:13  error  'userId' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/bot/scenes/settings-scene.js
+    5:7   error  'currencyConverter' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  573:47  error  'period' is defined but never used. Allowed unused args must match /^_/u                      no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/bot/telegram-bot-command-handlers.js
+    4:9    error    'detectLanguage' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   75:5    warning  Unexpected console statement                                                               no-console
+  130:5    warning  Unexpected console statement                                                               no-console
+  194:5    warning  Unexpected console statement                                                               no-console
+  227:5    warning  Unexpected console statement                                                               no-console
+  337:5    warning  Unexpected console statement                                                               no-console
+  383:9    error    Unexpected lexical declaration in case block                                               no-case-declarations
+  435:5    warning  Unexpected console statement                                                               no-console
+  450:33   error    'expense' is assigned a value but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  462:9    error    Unexpected lexical declaration in case block                                               no-case-declarations
+  476:9    error    Unexpected lexical declaration in case block                                               no-case-declarations
+  537:5    warning  Unexpected console statement                                                               no-console
+  539:22   error    'userLanguage' is not defined                                                              no-undef
+  541:104  error    'userLanguage' is not defined                                                              no-undef
+  559:36   error    'pool' is not defined                                                                      no-undef
+  611:5    warning  Unexpected console statement                                                               no-console
+  628:11   error    'updatedExpense' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  648:5    warning  Unexpected console statement                                                               no-console
+  717:5    warning  Unexpected console statement                                                               no-console
+  734:30   error    'pool' is not defined                                                                      no-undef
+  775:5    warning  Unexpected console statement                                                               no-console
+  810:5    warning  Unexpected console statement                                                               no-console
+
+/Users/d/projects/personal-finance-tracker/bot/telegram-bot-implementation.js
+    5:7   error    'path' is assigned a value but never used. Allowed unused vars must match /^_/u                     no-unused-vars
+    6:7   error    'fs' is assigned a value but never used. Allowed unused vars must match /^_/u                       no-unused-vars
+    7:7   error    'axios' is assigned a value but never used. Allowed unused vars must match /^_/u                    no-unused-vars
+   11:7   error    'currencyConverter' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+   12:7   error    'productNormalizer' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+   13:7   error    'documentSourceHandler' is assigned a value but never used. Allowed unused vars must match /^_/u    no-unused-vars
+   14:7   error    'expenseHandlers' is assigned a value but never used. Allowed unused vars must match /^_/u          no-unused-vars
+   15:7   error    'expenseDuplicateHandler' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   89:5   warning  Unexpected console statement                                                                        no-console
+  207:7   error    'looksLikeExpense' is not defined                                                                   no-undef
+  214:11  error    'processNaturalLanguageExpense' is not defined                                                      no-undef
+  225:3   warning  Unexpected console statement                                                                        no-console
+  226:65  error    'e' is defined but never used. Allowed unused args must match /^_/u                                 no-unused-vars
+  263:7   error    Unexpected lexical declaration in case block                                                        no-case-declarations
+  291:7   error    Unexpected lexical declaration in case block                                                        no-case-declarations
+
+/Users/d/projects/personal-finance-tracker/core/app.js
+  268:7  warning  Don't use process.exit(); throw an error instead  no-process-exit
+  327:7  warning  Don't use process.exit(); throw an error instead  no-process-exit
+  332:5  warning  Don't use process.exit(); throw an error instead  no-process-exit
+
+/Users/d/projects/personal-finance-tracker/core/logger-utility.js
+   81:7  warning  Unexpected console statement  no-console
+   93:5  warning  Unexpected console statement  no-console
+  109:5  warning  Unexpected console statement  no-console
+  121:5  warning  Unexpected console statement  no-console
+  134:7  warning  Unexpected console statement  no-console
+
+/Users/d/projects/personal-finance-tracker/core/security-middleware.js
+   83:9  warning  Unexpected console statement  no-console
+   90:5  warning  Unexpected console statement  no-console
+  115:7  warning  Unexpected console statement  no-console
+  145:5  warning  Unexpected console statement  no-console
+  171:5  warning  Unexpected console statement  no-console
+
+/Users/d/projects/personal-finance-tracker/eslint-fixer.js
+    2:10  error    'getUnusedVarsForFile' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+   40:20  error    'path' is not defined                                                                      no-undef
+   45:10  error    'getUndefinedVarsForFile' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   54:20  error    'path' is not defined                                                                      no-undef
+   59:10  error    'processFiles' is defined but never used. Allowed unused vars must match /^_/u             no-unused-vars
+  107:5   error    'processFile' is not defined                                                               no-undef
+  110:3   warning  Unexpected console statement                                                               no-console
+  111:3   warning  Unexpected console statement                                                               no-console
+  114:5   error    'execSync' is not defined                                                                  no-undef
+  116:5   warning  Unexpected console statement                                                               no-console
+
+/Users/d/projects/personal-finance-tracker/improved-eslint-fixer.js
+    5:9   error    'execSync' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   21:5   warning  Unexpected console statement                                                         no-console
+   32:5   warning  Unexpected console statement                                                         no-console
+  102:3   warning  Unexpected console statement                                                         no-console
+  129:7   warning  Unexpected console statement                                                         no-console
+  132:5   warning  Unexpected console statement                                                         no-console
+  173:5   warning  Unexpected console statement                                                         no-console
+  179:35  error    Shadowing of global property 'undefined'                                             no-shadow-restricted-names
+  185:7   warning  Unexpected console statement                                                         no-console
+  189:3   warning  Unexpected console statement                                                         no-console
+  190:3   warning  Unexpected console statement                                                         no-console
+
+/Users/d/projects/personal-finance-tracker/scripts/cleanup.js
+   7:9   warning  Unexpected console statement                      no-console
+  14:13  warning  Unexpected console statement                      no-console
+  21:13  warning  Unexpected console statement                      no-console
+  28:13  warning  Unexpected console statement                      no-console
+  35:13  warning  Unexpected console statement                      no-console
+  48:13  warning  Unexpected console statement                      no-console
+  52:9   warning  Unexpected console statement                      no-console
+  54:9   warning  Unexpected console statement                      no-console
+  55:9   warning  Don't use process.exit(); throw an error instead  no-process-exit
+
+/Users/d/projects/personal-finance-tracker/scripts/fix-permissions.js
+  10:9   warning  Unexpected console statement                      no-console
+  27:13  warning  Unexpected console statement                      no-console
+  34:13  warning  Unexpected console statement                      no-console
+  38:9   warning  Unexpected console statement                      no-console
+  40:9   warning  Unexpected console statement                      no-console
+  41:9   warning  Don't use process.exit(); throw an error instead  no-process-exit
+
+/Users/d/projects/personal-finance-tracker/scripts/verify-install.js
+   6:9   warning  Unexpected console statement                                                     no-console
+  22:15  error    'user' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  26:13  warning  Unexpected console statement                                                     no-console
+  44:9   warning  Unexpected console statement                                                     no-console
+  46:9   warning  Unexpected console statement                                                     no-console
+  47:9   warning  Don't use process.exit(); throw an error instead                                 no-process-exit
+
+/Users/d/projects/personal-finance-tracker/services/analytics/cross-language-analytics-service.js
+  115:7   warning  Unexpected console statement                                                            no-console
+  287:7   warning  Unexpected console statement                                                            no-console
+  386:7   warning  Unexpected console statement                                                            no-console
+  448:7   warning  Unexpected console statement                                                            no-console
+  496:7   warning  Unexpected console statement                                                            no-console
+  521:13  error    'productName' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  605:7   warning  Unexpected console statement                                                            no-console
+
+/Users/d/projects/personal-finance-tracker/services/analytics/enhanced-location-intelligence.js
+   50:7   warning  Unexpected console statement  no-console
+   89:7   warning  Unexpected console statement  no-console
+  183:7   warning  Unexpected console statement  no-console
+  236:7   warning  Unexpected console statement  no-console
+  304:7   warning  Unexpected console statement  no-console
+  416:7   warning  Unexpected console statement  no-console
+  583:13  warning  Unexpected console statement  no-console
+  613:7   warning  Unexpected console statement  no-console
+  724:7   warning  Unexpected console statement  no-console
+  777:7   warning  Unexpected console statement  no-console
+
+/Users/d/projects/personal-finance-tracker/services/analytics/expense-benchmarking-service.js
+    4:7   error    'locationIntelligence' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   85:7   warning  Unexpected console statement                                                                     no-console
+  110:9   error    Unexpected lexical declaration in case block                                                     no-case-declarations
+  124:9   error    'endDate' is constant                                                                            no-const-assign
+  130:9   error    Unexpected lexical declaration in case block                                                     no-case-declarations
+  131:9   error    Unexpected lexical declaration in case block                                                     no-case-declarations
+  132:9   error    Unexpected lexical declaration in case block                                                     no-case-declarations
+  134:9   error    'endDate' is constant                                                                            no-const-assign
+  141:9   error    'endDate' is constant                                                                            no-const-assign
+  210:13  warning  Unexpected console statement                                                                     no-console
+  224:7   warning  Unexpected console statement                                                                     no-console
+  450:19  error    'benchmarkType' is assigned a value but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  494:7   warning  Unexpected console statement                                                                     no-console
+  818:7   warning  Unexpected console statement                                                                     no-console
+  866:7   warning  Unexpected console statement                                                                     no-console
+
+/Users/d/projects/personal-finance-tracker/services/core/backup-service.js
+   49:7   warning  Unexpected console statement  no-console
+  128:7   warning  Unexpected console statement  no-console
+  186:7   warning  Unexpected console statement  no-console
+  201:9   warning  Unexpected console statement  no-console
+  254:7   warning  Unexpected console statement  no-console
+  278:7   warning  Unexpected console statement  no-console
+  318:11  warning  Unexpected console statement  no-console
+  346:7   warning  Unexpected console statement  no-console
+  403:7   warning  Unexpected console statement  no-console
+  427:5   warning  Unexpected console statement  no-console
+
+/Users/d/projects/personal-finance-tracker/services/core/currency-conversion-service.js
+  117:7  warning  Unexpected console statement  no-console
+  185:7  warning  Unexpected console statement  no-console
+  217:7  warning  Unexpected console statement  no-console
+  259:7  warning  Unexpected console statement  no-console
+  286:7  warning  Unexpected console statement  no-console
+  320:7  warning  Unexpected console statement  no-console
+  365:7  warning  Unexpected console statement  no-console
+
+/Users/d/projects/personal-finance-tracker/services/core/data-source-tracker.js
+  80:9  error  'metadata' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/services/core/document-source-handler.js
+    6:7   error    'axios' is assigned a value but never used. Allowed unused vars must match /^_/u             no-unused-vars
+   54:13  error    'extractionRecord' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   87:7   warning  Unexpected console statement                                                                 no-console
+  106:9   warning  Unexpected console statement                                                                 no-console
+  161:7   warning  Unexpected console statement                                                                 no-console
+  219:7   warning  Unexpected console statement                                                                 no-console
+  277:7   warning  Unexpected console statement                                                                 no-console
+  337:7   warning  Unexpected console statement                                                                 no-console
+  352:20  error    'imageData' is defined but never used. Allowed unused args must match /^_/u                  no-unused-vars
+  371:20  error    'text' is defined but never used. Allowed unused args must match /^_/u                       no-unused-vars
+  392:24  error    'text' is defined but never used. Allowed unused args must match /^_/u                       no-unused-vars
+  411:26  error    'text' is defined but never used. Allowed unused args must match /^_/u                       no-unused-vars
+  446:7   warning  Unexpected console statement                                                                 no-console
+
+/Users/d/projects/personal-finance-tracker/services/core/product-normalization-service.js
+   68:7  warning  Unexpected console statement  no-console
+  135:7  warning  Unexpected console statement  no-console
+  159:7  warning  Unexpected console statement  no-console
+  287:7  warning  Unexpected console statement  no-console
+  430:7  warning  Unexpected console statement  no-console
+
+/Users/d/projects/personal-finance-tracker/services/localization/i18n-service.js
+  95:24  error  'language' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/services/localization/language-handling-service.js
+   23:62  error    'storeOriginal' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   46:7   warning  Unexpected console statement                                                              no-console
+  103:7   warning  Unexpected console statement                                                              no-console
+  124:7   warning  Unexpected console statement                                                              no-console
+  144:7   warning  Unexpected console statement                                                              no-console
+  173:7   warning  Unexpected console statement                                                              no-console
+  219:7   warning  Unexpected console statement                                                              no-console
+
+/Users/d/projects/personal-finance-tracker/services/receipt/receipt-processor-service.js
+    6:7  error    'languageHandler' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  154:7  warning  Unexpected console statement                                                                no-console
+  292:7  warning  Unexpected console statement                                                                no-console
+  329:7  warning  Unexpected console statement                                                                no-console
+  378:7  warning  Unexpected console statement                                                                no-console
+  417:7  warning  Unexpected console statement                                                                no-console
+  496:7  warning  Unexpected console statement                                                                no-console
+  550:7  warning  Unexpected console statement                                                                no-console
+  586:7  warning  Unexpected console statement                                                                no-console
+  620:7  warning  Unexpected console statement                                                                no-console
+
+/Users/d/projects/personal-finance-tracker/src/app.js
+   16:9   error    'body' is assigned a value but never used. Allowed unused vars must match /^_/u              no-unused-vars
+   16:15  error    'validationResult' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   18:7   error    'TelegramBot' is assigned a value but never used. Allowed unused vars must match /^_/u       no-unused-vars
+   19:7   error    'winston' is assigned a value but never used. Allowed unused vars must match /^_/u           no-unused-vars
+   20:7   error    'moment' is assigned a value but never used. Allowed unused vars must match /^_/u            no-unused-vars
+   21:9   error    'pool' is assigned a value but never used. Allowed unused vars must match /^_/u              no-unused-vars
+   68:7   error    'jwtMiddleware' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  164:5   warning  Don't use process.exit(); throw an error instead                                             no-process-exit
+  167:5   warning  Don't use process.exit(); throw an error instead                                             no-process-exit
+  180:5   warning  Don't use process.exit(); throw an error instead                                             no-process-exit
+  189:5   warning  Don't use process.exit(); throw an error instead                                             no-process-exit
+
+/Users/d/projects/personal-finance-tracker/src/examples/telegram-example.js
+  64:22  warning  Unexpected console statement  no-console
+
+/Users/d/projects/personal-finance-tracker/src/middleware/errorHandler.js
+   1:9   error  'logger' is assigned a value but never used. Allowed unused vars must match /^_/u                        no-unused-vars
+   6:3   error  'DatabaseError' is assigned a value but never used. Allowed unused vars must match /^_/u                 no-unused-vars
+   7:3   error  'DatabaseConnectionError' is assigned a value but never used. Allowed unused vars must match /^_/u       no-unused-vars
+   8:3   error  'DatabaseQueryError' is assigned a value but never used. Allowed unused vars must match /^_/u            no-unused-vars
+   9:3   error  'DatabaseTransactionError' is assigned a value but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  11:3   error  'ValidationError' is assigned a value but never used. Allowed unused vars must match /^_/u               no-unused-vars
+  12:3   error  'InputValidationError' is assigned a value but never used. Allowed unused vars must match /^_/u          no-unused-vars
+  13:3   error  'SchemaValidationError' is assigned a value but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  14:3   error  'CurrencyValidationError' is assigned a value but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  15:3   error  'DateValidationError' is assigned a value but never used. Allowed unused vars must match /^_/u           no-unused-vars
+  17:3   error  'AuthenticationError' is assigned a value but never used. Allowed unused vars must match /^_/u           no-unused-vars
+  18:3   error  'TokenError' is assigned a value but never used. Allowed unused vars must match /^_/u                    no-unused-vars
+  19:3   error  'TokenExpiredError' is assigned a value but never used. Allowed unused vars must match /^_/u             no-unused-vars
+  20:3   error  'InvalidCredentialsError' is assigned a value but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  21:3   error  'AuthorizationError' is assigned a value but never used. Allowed unused vars must match /^_/u            no-unused-vars
+  22:3   error  'InsufficientPermissionsError' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  23:3   error  'ResourceAccessError' is assigned a value but never used. Allowed unused vars must match /^_/u           no-unused-vars
+  26:3   error  'ResourceConflictError' is assigned a value but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  27:3   error  'DuplicateResourceError' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  29:3   error  'ExternalServiceError' is assigned a value but never used. Allowed unused vars must match /^_/u          no-unused-vars
+  30:3   error  'APIError' is assigned a value but never used. Allowed unused vars must match /^_/u                      no-unused-vars
+  31:3   error  'ServiceUnavailableError' is assigned a value but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  33:3   error  'RateLimitError' is assigned a value but never used. Allowed unused vars must match /^_/u                no-unused-vars
+  34:3   error  'RateLimitExceededError' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  37:3   error  'InvalidOperationError' is assigned a value but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  38:3   error  'StateTransitionError' is assigned a value but never used. Allowed unused vars must match /^_/u          no-unused-vars
+  40:3   error  'FileProcessingError' is assigned a value but never used. Allowed unused vars must match /^_/u           no-unused-vars
+  41:3   error  'FileUploadError' is assigned a value but never used. Allowed unused vars must match /^_/u               no-unused-vars
+  42:3   error  'FileValidationError' is assigned a value but never used. Allowed unused vars must match /^_/u           no-unused-vars
+  43:3   error  'FileSizeError' is assigned a value but never used. Allowed unused vars must match /^_/u                 no-unused-vars
+  44:3   error  'FileTypeError' is assigned a value but never used. Allowed unused vars must match /^_/u                 no-unused-vars
+  48:38  error  'next' is defined but never used. Allowed unused args must match /^_/u                                   no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/src/middleware/rateLimiter.js
+  18:34  error  'options' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/src/middleware/validation.js
+  1:9  error  'body' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/src/routes/dashboard.js
+  1548:78  error  Parsing error: Expecting Unicode escape sequence \uXXXX
+
+/Users/d/projects/personal-finance-tracker/src/services/dashboard/metricsService.js
+    2:9   error  'AppError' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  111:21  error  'rows' is defined but never used. Allowed unused args must match /^_/u               no-unused-vars
+  116:28  error  'rows' is defined but never used. Allowed unused args must match /^_/u               no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/src/services/monitoring/analytics-service.js
+  3:7  error  'monitoringService' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/src/services/monitoring/error-monitoring-service.js
+  61:9  error  Duplicate key 'tracesSampleRate'  no-dupe-keys
+  67:9  error  Duplicate key 'environment'       no-dupe-keys
+
+/Users/d/projects/personal-finance-tracker/src/utils/errors.js
+  55:38  error    'next' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  82:7   warning  Unexpected console statement                                            no-console
+
+/Users/d/projects/personal-finance-tracker/tests/helpers/test-setup.js
+  4:7  error  'userManager' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/tests/integration/analytics-flow.test.js
+   3:7   error  'userManager' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+   4:7   error  'currencyConverter' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   5:7   error  'i18nService' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+   6:9   error  'pool' is assigned a value but never used. Allowed unused vars must match /^_/u               no-unused-vars
+  31:13  error  'startDate' is assigned a value but never used. Allowed unused vars must match /^_/u          no-unused-vars
+  31:24  error  'endDate' is assigned a value but never used. Allowed unused vars must match /^_/u            no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/tests/integration/expense-management-flow.test.js
+  2:7  error  'userManager' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  3:7  error  'currencyConverter' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/tests/integration/expense-reporting-flow.test.js
+  2:7  error  'expenseService' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  4:7  error  'currencyConverter' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  5:7  error  'i18nService' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/tests/integration/receipt-processing-flow.test.js
+  4:7  error  'currencyConverter' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  5:7  error  'i18nService' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/tests/integration/security.test.js
+  5:9  error  'logger' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/tests/integration/user-settings-flow.test.js
+   2:7  error  'i18nService' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  10:3  error  'TEST_DATA' is assigned a value but never used. Allowed unused vars must match /^_/u    no-unused-vars
+
+/Users/d/projects/personal-finance-tracker/tests/services/currency-conversion-service.test.js
+  4:25  error  'GetItemCommand' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  4:41  error  'PutItemCommand' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+✖ 278 problems (132 errors, 146 warnings)
+

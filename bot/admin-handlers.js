@@ -1,10 +1,12 @@
+const logger = require('../core/logger-utility');
+let $2;
 // src/handlers/adminCommands.js
 const { Markup } = require('telegraf');
 const { Pool } = require('pg');
 const { exec } = require('child_process');
 const util = require('util');
 const path = require('path');
-const fs = require('fs');
+const _fs = require($2);
 const backupService = require('../services/core/backup-service');
 const { translate } = require('../services/localization/i18n-service');
 const { getUserLanguage } = require('../services/core/user-manager');
@@ -108,7 +110,7 @@ async function handleAdminUsers(ctx) {
       )]
     ]));
   } catch (error) {
-    console.error('Error fetching user stats:', error);
+    logger.error('Error fetching user stats:', error);
     return ctx.answerCbQuery(translate('admin.error.fetch_stats', 'en'));
   }
 }
@@ -134,12 +136,12 @@ async function handleAdminBackups(ctx) {
     if (backups.length === 0) {
       message += translate('admin.backup.no_backups', userLanguage);
     } else {
-      backups.forEach((backup, index) => {
+      backups.forEach((backup, _index) => {
         const date = backup.dateFormatted;
         const size = backup.sizeFormatted;
         const description = backup.metadata?.description || '';
         
-        message += `${index + 1}. ${date} (${size}) ${description ? `- ${description}` : ''}\n`;
+        message += `${_index + 1}. ${date} (${size}) ${description ? `- ${description}` : ''}\n`;
       });
     }
     
@@ -160,7 +162,7 @@ async function handleAdminBackups(ctx) {
     
     return ctx.editMessageText(message, Markup.inlineKeyboard(keyboard));
   } catch (error) {
-    console.error('Error handling backups:', error);
+    logger.error('Error handling backups:', error);
     return ctx.answerCbQuery(translate('admin.error.backups', 'en'));
   }
 }
@@ -216,7 +218,7 @@ async function handleCreateBackup(ctx) {
       ])
     );
   } catch (error) {
-    console.error('Error creating backup:', error);
+    logger.error('Error creating backup:', error);
     await ctx.editMessageText(
       translate('admin.backup.error', userLanguage, {
         error: error.message
@@ -279,7 +281,7 @@ async function handleViewAllBackups(ctx) {
         
         message += `\n📅 ${monthName} ${year}:\n`;
         
-        monthBackups.forEach((backup, index) => {
+        monthBackups.forEach((backup, _index) => {
           const day = backup.date.getDate();
           const time = backup.date.toLocaleTimeString(
             userLanguage === 'ru' ? 'ru-RU' : 'en-US',
@@ -306,7 +308,7 @@ async function handleViewAllBackups(ctx) {
     
     return ctx.editMessageText(message, Markup.inlineKeyboard(keyboard));
   } catch (error) {
-    console.error('Error viewing all backups:', error);
+    logger.error('Error viewing all backups:', error);
     return ctx.answerCbQuery(translate('admin.error.view_backups', 'en'));
   }
 }
@@ -345,7 +347,7 @@ async function handleCleanOldBackups(ctx) {
       )]
     ]));
   } catch (error) {
-    console.error('Error cleaning old backups:', error);
+    logger.error('Error cleaning old backups:', error);
     return ctx.answerCbQuery(translate('admin.error.cleanup', 'en'));
   }
 }
@@ -439,7 +441,7 @@ async function handleSystemStatus(ctx) {
       )]
     ]));
   } catch (error) {
-    console.error('Error getting system status:', error);
+    logger.error('Error getting system status:', error);
     return ctx.answerCbQuery(translate('admin.error.status', 'en'));
   }
 }

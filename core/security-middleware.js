@@ -1,3 +1,4 @@
+const logger = require('../core/logger-utility');
 // src/middleware/securityMiddleware.js
 const rateLimit = require('telegraf-ratelimit');
 const { Pool } = require('pg');
@@ -80,14 +81,14 @@ async function authMiddleware(ctx, next) {
             expires_at = $3
         `, [userId, JSON.stringify(ctx.session), expiresAt]);
       } catch (sessionError) {
-        console.error('Error storing session:', sessionError);
+        logger.error('Error storing session:', sessionError);
         // Non-critical, continue with request
       }
     }
     
     return next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    logger.error('Auth middleware error:', error);
     return ctx.reply('Authentication error. Please try again later.');
   }
 }
@@ -112,7 +113,7 @@ async function loggingMiddleware(ctx, next) {
         ]
       );
     } catch (err) {
-      console.error('Logging error:', err);
+      logger.error('Logging error:', err);
       // Non-critical, continue with request
     }
   }
@@ -142,7 +143,7 @@ async function adminMiddleware(ctx, next) {
     
     return next();
   } catch (error) {
-    console.error('Admin middleware error:', error);
+    logger.error('Admin middleware error:', error);
     return ctx.reply('Authorization error. Please try again later.');
   }
 }
@@ -168,7 +169,7 @@ async function loadSessionMiddleware(ctx, next) {
       };
     }
   } catch (error) {
-    console.error('Session loading error:', error);
+    logger.error('Session loading error:', error);
     // Non-critical, continue with request
   }
   

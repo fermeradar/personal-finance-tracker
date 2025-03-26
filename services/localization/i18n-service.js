@@ -1,3 +1,4 @@
+let _language;
 // src/services/i18n.js
 const { format } = require('date-fns');
 const { ru, enUS } = require('date-fns/locale');
@@ -43,8 +44,8 @@ const dateFormats = {
  * @param {Object} params - Parameters for interpolation
  * @returns {String} - Translated text
  */
-function translate(key, language = 'en', params = {}) {
-  const langTranslations = translations[language] || translations.en;
+function translate(key, _language = 'en', params = {}) {
+  const langTranslations = translations[_language] || translations.en;
   let text = langTranslations[key] || key;
   
   // Simple parameter replacement
@@ -62,13 +63,13 @@ function translate(key, language = 'en', params = {}) {
  * @param {String} language - Target language
  * @returns {String} - Formatted currency
  */
-function formatCurrency(amount, currency = 'EUR', language = 'en') {
+function formatCurrency(amount, currency = 'EUR', _language = 'en') {
   const options = {
-    ...currencyFormatters[language] || currencyFormatters.en,
+    ...currencyFormatters[_language] || currencyFormatters.en,
     currency
   };
   
-  return new Intl.NumberFormat(language === 'ru' ? 'ru-RU' : 'en-US', options).format(amount);
+  return new Intl.NumberFormat(_language === 'ru' ? 'ru-RU' : 'en-US', options).format(amount);
 }
 
 /**
@@ -78,10 +79,10 @@ function formatCurrency(amount, currency = 'EUR', language = 'en') {
  * @param {String} language - Target language
  * @returns {String} - Formatted date
  */
-function formatDate(date, formatString = null, language = 'en') {
+function formatDate(date, formatString = null, _language = 'en') {
   const dateObj = date instanceof Date ? date : new Date(date);
-  const locale = dateLocales[language] || dateLocales.en;
-  const dateFormat = formatString || dateFormats[language] || dateFormats.en;
+  const locale = dateLocales[_language] || dateLocales.en;
+  const dateFormat = formatString || dateFormats[_language] || dateFormats.en;
   
   return format(dateObj, dateFormat, { locale });
 }
@@ -92,7 +93,7 @@ function formatDate(date, formatString = null, language = 'en') {
  * @param {String} language - Target language
  * @returns {String} - Emoji
  */
-function getEmoji(key, language = 'en') {
+function getEmoji(key, _language = 'en') {
   // Some cultures might prefer different emoji for the same concept
   // For simplicity, we use the same emoji for all languages here
   const emojiMap = {
@@ -118,7 +119,7 @@ function getEmoji(key, language = 'en') {
     'error': '❗',
     'info': 'ℹ️',
     'help': '❓',
-    'language': '🌐',
+    '_language': '🌐',
     'currency': '💱',
     'search': '🔍',
     'filter': '🔍',
@@ -148,9 +149,9 @@ function getEmoji(key, language = 'en') {
  * @param {Object} params - Translation parameters
  * @returns {String} - Formatted message with emoji and translation
  */
-function formatMessage(key, emojiKey, language = 'en', params = {}) {
-  const emoji = getEmoji(emojiKey, language);
-  const text = translate(key, language, params);
+function formatMessage(key, emojiKey, _language = 'en', params = {}) {
+  const emoji = getEmoji(emojiKey, _language);
+  const text = translate(key, _language, params);
   
   return `${emoji} ${text}`;
 }

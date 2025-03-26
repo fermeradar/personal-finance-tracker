@@ -1,9 +1,11 @@
+const logger = require('../core/logger-utility');
+let $2;
 // src/services/documentSourceHandler.js
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
+const _axios = require($2);
 
 // Initialize PostgreSQL connection pool
 const pool = new Pool({
@@ -51,7 +53,7 @@ class DocumentSourceHandler {
       // Store the extraction record
       const storagePath = processingResult.storagePath || null;
       
-      const extractionRecord = await pool.query(`
+      const _extractionRecord = await pool.query(`
         INSERT INTO document_extractions(
           extraction_id, user_id, document_type, extraction_date,
           data_extracted, confidence_score, detected_language,
@@ -84,7 +86,7 @@ class DocumentSourceHandler {
         storagePath
       };
     } catch (error) {
-      console.error('Error processing document:', error);
+      logger.error('Error processing document:', error);
       
       // Log the failed extraction attempt
       try {
@@ -103,7 +105,7 @@ class DocumentSourceHandler {
           sourceType
         ]);
       } catch (logError) {
-        console.error('Error logging document processing failure:', logError);
+        logger.error('Error logging document processing failure:', logError);
       }
       
       throw error;
@@ -127,7 +129,7 @@ class DocumentSourceHandler {
       if (sourceType === 'user_upload') {
         // For user uploads, we need to run OCR
         const ocrResult = await this.performOCR(documentData);
-        originalText = ocrResult.text;
+        originalText = ocrResult._text;
         language = ocrResult.language;
         confidence = ocrResult.confidence;
         
@@ -158,7 +160,7 @@ class DocumentSourceHandler {
         message: 'Receipt processed successfully'
       };
     } catch (error) {
-      console.error('Error processing receipt:', error);
+      logger.error('Error processing receipt:', error);
       return {
         extractedData: { error: error.message },
         confidence: 0,
@@ -185,7 +187,7 @@ class DocumentSourceHandler {
       if (sourceType === 'user_upload') {
         // For user uploads, we need to run OCR
         const ocrResult = await this.performOCR(documentData);
-        originalText = ocrResult.text;
+        originalText = ocrResult._text;
         language = ocrResult.language;
         confidence = ocrResult.confidence;
         
@@ -216,7 +218,7 @@ class DocumentSourceHandler {
         message: 'Utility bill processed successfully'
       };
     } catch (error) {
-      console.error('Error processing utility bill:', error);
+      logger.error('Error processing utility bill:', error);
       return {
         extractedData: { error: error.message },
         confidence: 0,
@@ -243,7 +245,7 @@ class DocumentSourceHandler {
       if (sourceType === 'user_upload') {
         // For user uploads, we need to run OCR
         const ocrResult = await this.performOCR(documentData);
-        originalText = ocrResult.text;
+        originalText = ocrResult._text;
         language = ocrResult.language;
         confidence = ocrResult.confidence;
         
@@ -274,7 +276,7 @@ class DocumentSourceHandler {
         message: 'Bank statement processed successfully'
       };
     } catch (error) {
-      console.error('Error processing bank statement:', error);
+      logger.error('Error processing bank statement:', error);
       return {
         extractedData: { error: error.message },
         confidence: 0,
@@ -301,7 +303,7 @@ class DocumentSourceHandler {
       if (sourceType === 'user_upload') {
         // For user uploads, we need to run OCR
         const ocrResult = await this.performOCR(documentData);
-        originalText = ocrResult.text;
+        originalText = ocrResult._text;
         language = ocrResult.language;
         confidence = ocrResult.confidence;
         
@@ -334,7 +336,7 @@ class DocumentSourceHandler {
         message: 'Document processed successfully'
       };
     } catch (error) {
-      console.error('Error processing generic document:', error);
+      logger.error('Error processing generic document:', error);
       return {
         extractedData: { error: error.message },
         confidence: 0,
@@ -349,10 +351,10 @@ class DocumentSourceHandler {
    * @param {Buffer} imageData - Image data
    * @returns {Promise<Object>} - OCR result
    */
-  async performOCR(imageData) {
+  async performOCR(_imageData) {
     // This is a placeholder - in a real implementation, you would:
     // 1. Use Tesseract.js or connect to Google Vision API
-    // 2. Process the image and extract text
+    // 2. Process the image and extract _text
     // 3. Detect language and confidence level
     
     // For this example, we'll simulate a response
@@ -368,9 +370,9 @@ class DocumentSourceHandler {
    * @param {String} text - OCR text from receipt
    * @returns {Object} - Structured receipt data
    */
-  parseReceiptText(text) {
+  parseReceiptText(_text) {
     // This is a placeholder - in a real implementation, you would:
-    // 1. Parse the text using regular expressions or NLP
+    // 1. Parse the _text using regular expressions or NLP
     // 2. Extract details like merchant, date, items, total, etc.
     
     // For this example, we'll return a basic structure
@@ -389,7 +391,7 @@ class DocumentSourceHandler {
    * @param {String} text - OCR text from utility bill
    * @returns {Object} - Structured bill data
    */
-  parseUtilityBillText(text) {
+  parseUtilityBillText(_text) {
     // Placeholder implementation
     return {
       provider: "Example Utility",
@@ -408,7 +410,7 @@ class DocumentSourceHandler {
    * @param {String} text - OCR text from bank statement
    * @returns {Object} - Structured statement data
    */
-  parseBankStatementText(text) {
+  parseBankStatementText(_text) {
     // Placeholder implementation
     return {
       bank_name: "Example Bank",
@@ -443,7 +445,7 @@ class DocumentSourceHandler {
       
       return filePath;
     } catch (error) {
-      console.error('Error storing document:', error);
+      logger.error('Error storing document:', error);
       return null;
     }
   }
@@ -533,7 +535,7 @@ class DocumentSourceHandler {
       'api_import': 90,     // Data from external APIs is quite reliable
       'user_upload': 80,    // Document uploads are moderately reliable
       'email_import': 75,   // Email imports can have formatting issues
-      'user_text': 65,      // Direct text input from user
+      'user_text': 65,      // Direct _text input from user
       'user_voice': 60      // Voice input has potential for misunderstanding
     };
     

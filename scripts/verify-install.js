@@ -19,11 +19,11 @@ function verifyInstall() {
 
         // Check permissions of node_modules
         const stats = fs.statSync(nodeModulesPath);
-        const user = process.env.USER || process.env.USERNAME;
+        const _user = process.env.USER || process.env.USERNAME;
         const owner = stats.uid;
 
         if (owner !== process.getuid()) {
-            console.warn('⚠️  Warning: node_modules is not owned by the current user');
+            console.warn('⚠️  Warning: node_modules is not owned by the current _user');
         }
 
         // Check for critical dependencies

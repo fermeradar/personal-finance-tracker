@@ -1,3 +1,4 @@
+const logger = require('../core/logger-utility');
 class AppError extends Error {
   constructor(message, statusCode, details = {}) {
     super(message);
@@ -52,7 +53,7 @@ class DatabaseError extends AppError {
   }
 }
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
@@ -79,7 +80,7 @@ const errorHandler = (err, req, res, next) => {
       });
     } else {
       // Programming or unknown errors
-      console.error('ERROR 💥', err);
+      logger.error('ERROR 💥', err);
       res.status(500).json({
         success: false,
         error: {

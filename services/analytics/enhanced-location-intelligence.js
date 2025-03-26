@@ -1,3 +1,4 @@
+const logger = require('../core/logger-utility');
 // src/services/locationIntelligence.js
 const { Pool } = require('pg');
 const productNormalizer = require('./productNormalizer');
@@ -47,7 +48,7 @@ class LocationIntelligence {
       
       return insertResult.rows[0];
     } catch (error) {
-      console.error('Error finding or creating retailer:', error);
+      logger.error('Error finding or creating retailer:', error);
       return null;
     }
   }
@@ -86,7 +87,7 @@ class LocationIntelligence {
       
       return true;
     } catch (error) {
-      console.error('Error adding retailer variation:', error);
+      logger.error('Error adding retailer variation:', error);
       return false;
     }
   }
@@ -180,7 +181,7 @@ class LocationIntelligence {
       
       return insertResult.rows[0];
     } catch (error) {
-      console.error('Error finding or creating retail location:', error);
+      logger.error('Error finding or creating retail location:', error);
       return null;
     }
   }
@@ -233,7 +234,7 @@ class LocationIntelligence {
       
       return null;
     } catch (error) {
-      console.error('Error identifying neighborhood:', error);
+      logger.error('Error identifying neighborhood:', error);
       return null;
     }
   }
@@ -301,7 +302,7 @@ class LocationIntelligence {
         interpretation: 'Average priced'
       };
     } catch (error) {
-      console.error('Error getting retailer price index:', error);
+      logger.error('Error getting retailer price index:', error);
       return {
         retailerId,
         priceIndex: 100,
@@ -413,7 +414,7 @@ class LocationIntelligence {
       
       return null;
     } catch (error) {
-      console.error('Error detecting tourist premium:', error);
+      logger.error('Error detecting tourist premium:', error);
       return null;
     }
   }
@@ -580,7 +581,7 @@ class LocationIntelligence {
               exchange_rate: avgConversion.exchangeRate
             });
           } catch (error) {
-            console.error('Error converting currency:', error);
+            logger.error('Error converting currency:', error);
             standardizedResults.push({
               ...row,
               standardized_avg_price: null,
@@ -610,7 +611,7 @@ class LocationIntelligence {
         geographicVariations: standardizedResults
       };
     } catch (error) {
-      console.error('Error analyzing geographic price variations:', error);
+      logger.error('Error analyzing geographic price variations:', error);
       throw error;
     }
   }
@@ -721,7 +722,7 @@ class LocationIntelligence {
         recommendations: retailersWithIndex
       };
     } catch (error) {
-      console.error('Error getting retailer recommendations:', error);
+      logger.error('Error getting retailer recommendations:', error);
       throw error;
     }
   }
@@ -774,7 +775,7 @@ class LocationIntelligence {
         confidence: this.calculateLocationConfidence(locationData, documentType)
       };
     } catch (error) {
-      console.error('Error processing location from document:', error);
+      logger.error('Error processing location from document:', error);
       return null;
     }
   }

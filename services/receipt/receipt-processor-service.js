@@ -1,9 +1,11 @@
+const logger = require('../core/logger-utility');
+let $2;
 // src/services/receiptProcessor.js
 const { Pool } = require('pg');
 const documentSourceHandler = require('./documentSourceHandler');
 const receiptValidator = require('./receiptValidator');
 const productNormalizer = require('./productNormalizer');
-const languageHandler = require('./languageHandler');
+const _languageHandler = require($2);
 const currencyConverter = require('./currencyConverter');
 const locationIntelligence = require('./locationIntelligence');
 const dataSourceTracker = require('./dataSourceTracker');
@@ -151,7 +153,7 @@ class ReceiptProcessor {
           null
       };
     } catch (error) {
-      console.error('Error processing receipt to expense:', error);
+      logger.error('Error processing receipt to expense:', error);
       return {
         success: false,
         message: 'Error processing receipt',
@@ -289,7 +291,7 @@ class ReceiptProcessor {
         message: 'No changes were needed'
       };
     } catch (error) {
-      console.error('Error processing user corrections:', error);
+      logger.error('Error processing user corrections:', error);
       return {
         success: false,
         message: 'Error processing corrections',
@@ -326,7 +328,7 @@ class ReceiptProcessor {
       
       return normalizedItems;
     } catch (error) {
-      console.error('Error normalizing receipt items:', error);
+      logger.error('Error normalizing receipt items:', error);
       // Return original items as fallback
       return items.map(item => ({
         product_name: item.name,
@@ -375,7 +377,7 @@ class ReceiptProcessor {
         converted: true
       };
     } catch (error) {
-      console.error('Error handling currency conversion:', error);
+      logger.error('Error handling currency conversion:', error);
       return {
         originalAmount: amount,
         originalCurrency,
@@ -414,7 +416,7 @@ class ReceiptProcessor {
         timeZone: user.time_zone || 'UTC'
       };
     } catch (error) {
-      console.error('Error getting user preferences:', error);
+      logger.error('Error getting user preferences:', error);
       // Return defaults in case of error
       return {
         language: 'en',
@@ -493,7 +495,7 @@ class ReceiptProcessor {
       
       return null; // No category found
     } catch (error) {
-      console.error('Error determining category:', error);
+      logger.error('Error determining category:', error);
       return null;
     }
   }
@@ -547,7 +549,7 @@ class ReceiptProcessor {
         client.release();
       }
     } catch (error) {
-      console.error('Error saving expense:', error);
+      logger.error('Error saving expense:', error);
       throw error;
     }
   }
@@ -583,7 +585,7 @@ class ReceiptProcessor {
       
       return savedItems;
     } catch (error) {
-      console.error('Error saving expense items:', error);
+      logger.error('Error saving expense items:', error);
       throw error;
     }
   }
@@ -617,7 +619,7 @@ class ReceiptProcessor {
       
       return expense;
     } catch (error) {
-      console.error('Error getting expense with items:', error);
+      logger.error('Error getting expense with items:', error);
       throw error;
     }
   }

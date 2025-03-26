@@ -1,5 +1,6 @@
+let rows;
 const { pool } = require('../../config/database');
-const { AppError } = require('../../utils/errors');
+const { _AppError } = require('../../utils/errors');
 const os = require('os');
 
 class MetricsService {
@@ -73,16 +74,16 @@ class MetricsService {
     return this.processUserMetrics(result.rows);
   }
 
-  processPerformanceMetrics(rows) {
+  processPerformanceMetrics(_rows) {
     return {
       responseTime: {
-        current: rows[0]?.average_response_time || 0,
+        current: _rows[0]?.average_response_time || 0,
         average: rows.reduce((acc, row) => acc + row.average_response_time, 0) / rows.length,
         p95: this.calculatePercentile(rows.map(r => r.average_response_time), 95),
         p99: this.calculatePercentile(rows.map(r => r.average_response_time), 99)
       },
       requestCount: {
-        total: rows.reduce((acc, row) => acc + row.total_requests, 0),
+        total: _rows.reduce((acc, row) => acc + row.total_requests, 0),
         success: rows.reduce((acc, row) => acc + (row.total_requests - row.error_count), 0),
         error: rows.reduce((acc, row) => acc + row.error_count, 0)
       },
@@ -90,13 +91,13 @@ class MetricsService {
     };
   }
 
-  processUserMetrics(rows) {
+  processUserMetrics(_rows) {
     return {
-      active: rows[0]?.active_users || 0,
+      active: _rows[0]?.active_users || 0,
       total: rows.reduce((acc, row) => acc + row.total_sessions, 0),
-      new: this.calculateNewUsers(rows),
+      new: this.calculateNewUsers(_rows),
       engagement: {
-        score: this.calculateEngagementScore(rows),
+        score: this.calculateEngagementScore(_rows),
         trend: this.calculateTrend(rows.map(r => r.active_users))
       }
     };
@@ -108,12 +109,12 @@ class MetricsService {
     return sorted[index];
   }
 
-  calculateNewUsers(rows) {
+  calculateNewUsers(_rows) {
     // Implementation for calculating new users
     return 0; // Placeholder
   }
 
-  calculateEngagementScore(rows) {
+  calculateEngagementScore(_rows) {
     // Implementation for calculating engagement score
     return 0; // Placeholder
   }
