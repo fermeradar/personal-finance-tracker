@@ -1,17 +1,16 @@
---- a/bot/telegram-bot-command-handlers.js
-+++ b/bot/telegram-bot-command-handlers.js
-@@ -1,6 +1,8 @@
- const logger = require('../core/logger');
- const { Markup } = require('telegraf');
- const { pool } = require('../config/database');
-+const userLanguage = require('../services/i18n').getDefaultLanguage();
-+const looksLikeExpense = require('../services/expense-detection').looksLikeExpense;
-+const processNaturalLanguageExpense = require('../services/expense-processing').processNaturalLanguageExpense;
-
 --- a/bot/scenes/benchmark-scene.js
 +++ b/bot/scenes/benchmark-scene.js
-@@ -1,6 +1,7 @@
+@@ -2,6 +2,7 @@
  const { Scenes } = require('telegraf');
- const logger = require('../../core/logger');
- const i18n = require('../localization/i18n');
-+const currencyConverter = require('../../services/currency-conversion');
+ const logger = require('../../core/logger-utility');
+ const { pool } = require('../../config/database');
++const currencyConverter = require('../../services/core/currency-conversion-service');
+
+--- a/bot/telegram-bot-command-handlers.js
++++ b/bot/telegram-bot-command-handlers.js
+@@ -2,6 +2,8 @@
+ const { Telegraf } = require('telegraf');
+ const logger = require('../core/logger-utility');
+ const { pool } = require('../config/database');
++const { detectLanguage } = require('../services/localization/language-handling-service');
++let userLanguage = 'en'; // Default language

@@ -1,31 +1,18 @@
+--- a/core/app.js
++++ b/core/app.js
+@@ -265,7 +265,7 @@
+   try {
+     await initializeApp();
+   } catch (error) {
+-    process.exit(1);
++    throw error;
+   }
+ }
+
 --- a/scripts/cleanup.js
 +++ b/scripts/cleanup.js
 @@ -52,7 +52,7 @@
-     logger.info('Cleanup completed successfully');
-   } catch (error) {
      logger.error('Cleanup failed:', error);
--    process.exit(1);
-+    throw error;
-   }
- }
-
---- a/scripts/fix-permissions.js
-+++ b/scripts/fix-permissions.js
-@@ -38,7 +38,7 @@
-     logger.info('Permissions fixed successfully');
-   } catch (error) {
-     logger.error('Failed to fix permissions:', error);
--    process.exit(1);
-+    throw error;
-   }
- }
-
---- a/scripts/verify-install.js
-+++ b/scripts/verify-install.js
-@@ -44,7 +44,7 @@
-     logger.info('Installation verified successfully');
-   } catch (error) {
-     logger.error('Verification failed:', error);
 -    process.exit(1);
 +    throw error;
    }

@@ -1,0 +1,9 @@
+@@ -265,7 +265,7 @@
+   try {
+     await initializeApp();
+   } catch (error) {
+-    process.exit(1);
++    throw error;
+   }
+ }
+ 

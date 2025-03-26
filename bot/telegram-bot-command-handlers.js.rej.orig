@@ -1,0 +1,16 @@
+@@ -380,11 +380,10 @@
+   try {
+     switch (command) {
+       case 'start':
+-        {
+-          let userData = await getUserData(ctx);
+-          // ... rest of the code
+-          break;
+-        }
++        const userData = await getUserData(ctx);
++        // ... rest of the code
++        break;
++
+       // ... other cases
+     }
+   } catch (error) {

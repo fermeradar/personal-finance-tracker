@@ -1,27 +1,23 @@
---- a/bot/scenes/benchmark-scene.js
-+++ b/bot/scenes/benchmark-scene.js
-@@ -664,10 +664,9 @@
-     switch (action) {
-       case 'compare':
--        {
--          let comparisonData = await getComparisonData(ctx);
--          // Rest of the code
--        }
-+        const comparisonData = await getComparisonData(ctx);
-+        // Rest of the code
-+        break;
+--- a/bot/telegram-bot-command-handlers.js
++++ b/bot/telegram-bot-command-handlers.js
+@@ -380,8 +380,8 @@
+     case 'edit_amount':
++      let amount;
+       try {
+-        let amount = parseFloat(data);
++        amount = parseFloat(data);
+         if (isNaN(amount)) {
+           return ctx.reply('Invalid amount format');
+         }
 
 --- a/services/analytics/expense-benchmarking-service.js
 +++ b/services/analytics/expense-benchmarking-service.js
-@@ -109,13 +109,12 @@
+@@ -108,8 +108,9 @@
++    let startDate, endDate;
      switch (period) {
-       case 'daily':
--        {
--          let startDate = moment().startOf('day');
--          let endDate = moment().endOf('day');
--          // Rest of the code
--        }
-+        const startDate = moment().startOf('day');
-+        const endDate = moment().endOf('day');
-+        // Rest of the code
-+        break;
+       case 'week':
+-        let startDate = moment().subtract(1, 'week').startOf('day');
+-        let endDate = moment().endOf('day');
++        startDate = moment().subtract(1, 'week').startOf('day');
++        endDate = moment().endOf('day');
+         break;
