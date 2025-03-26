@@ -1,0 +1,71 @@
+--- a/bot/admin-handlers.js
++++ b/bot/admin-handlers.js
+@@ -4,7 +4,7 @@
+ const path = require('path');
+ const fs = require('fs');
+-const fs = require('fs');
++const _fs = require('fs');
+@@ -282,7 +282,7 @@
+-function someFunction(param, index) {
++function someFunction(param, _index) {
+
+--- a/bot/scenes/add-expense-scene.js
++++ b/bot/scenes/add-expense-scene.js
+-const currencyConverter = require('../services/currency-conversion');
++const _currencyConverter = require('../services/currency-conversion');
+
+--- a/bot/scenes/benchmark-scene.js
++++ b/bot/scenes/benchmark-scene.js
+-const userId = ctx.from.id;
++const _userId = ctx.from.id;
+
+--- a/bot/scenes/receipt-processing-scene.js
++++ b/bot/scenes/receipt-processing-scene.js
+-const userId = ctx.from.id;
++const _userId = ctx.from.id;
+
+--- a/bot/scenes/settings-scene.js
++++ b/bot/scenes/settings-scene.js
+-const currencyConverter = require('../services/currency-conversion');
++const _currencyConverter = require('../services/currency-conversion');
+-function handlePeriodChange(ctx, period) {
++function handlePeriodChange(ctx, _period) {
+
+--- a/bot/telegram-bot-command-handlers.js
++++ b/bot/telegram-bot-command-handlers.js
+-const detectLanguage = require('../services/language-detection');
++const _detectLanguage = require('../services/language-detection');
+
+--- a/src/middleware/errorHandler.js
++++ b/src/middleware/errorHandler.js
+-const logger = require('../utils/logger');
++const _logger = require('../utils/logger');
+-function errorHandler(err, req, res, next) {
++function errorHandler(err, req, res, _next) {
+
+--- a/src/middleware/rateLimiter.js
++++ b/src/middleware/rateLimiter.js
+-function createRateLimiter(options) {
++function createRateLimiter(_options) {
+
+--- a/src/middleware/validation.js
++++ b/src/middleware/validation.js
+-const { body } = require('express-validator');
++const { _body } = require('express-validator');
+
+--- a/src/services/dashboard/metricsService.js
++++ b/src/services/dashboard/metricsService.js
+-const AppError = require('../../utils/errors/AppError');
++const _AppError = require('../../utils/errors/AppError');
+-function processMetrics(rows) {
++function processMetrics(_rows) {
+
+--- a/src/services/monitoring/analytics-service.js
++++ b/src/services/monitoring/analytics-service.js
+-const monitoringService = require('./monitoring-service');
++const _monitoringService = require('./monitoring-service');
+
+--- a/tests/helpers/test-setup.js
++++ b/tests/helpers/test-setup.js
+-const userManager = require('../../services/user-management');
++const _userManager = require('../../services/user-management');

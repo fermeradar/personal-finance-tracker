@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1742943026009" clover="3.2.0">
-  <project timestamp="1742943026009" name="All files">
-    <metrics statements="965" coveredstatements="0" conditionals="423" coveredconditionals="0" methods="205" coveredmethods="0" elements="1593" coveredelements="0" complexity="0" loc="965" ncloc="965" packages="9" files="19" classes="19"/>
+<coverage generated="1742944940420" clover="3.2.0">
+  <project timestamp="1742944940420" name="All files">
+    <metrics statements="1015" coveredstatements="0" conditionals="434" coveredconditionals="0" methods="218" coveredmethods="0" elements="1667" coveredelements="0" complexity="0" loc="1015" ncloc="1015" packages="11" files="21" classes="21"/>
     <package name="src">
       <metrics statements="82" coveredstatements="0" conditionals="14" coveredconditionals="0" methods="8" coveredmethods="0"/>
       <file name="app.js" path="/Users/d/projects/personal-finance-tracker/src/app.js">
@@ -120,6 +120,37 @@
         <line num="49" count="0" type="stmt"/>
         <line num="55" count="0" type="stmt"/>
         <line num="59" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.examples">
+      <metrics statements="25" coveredstatements="0" conditionals="6" coveredconditionals="0" methods="6" coveredmethods="0"/>
+      <file name="telegram-example.js" path="/Users/d/projects/personal-finance-tracker/src/examples/telegram-example.js">
+        <metrics statements="25" coveredstatements="0" conditionals="6" coveredconditionals="0" methods="6" coveredmethods="0"/>
+        <line num="6" count="0" type="stmt"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="20" count="0" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="23" count="0" type="stmt"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="34" count="0" type="stmt"/>
+        <line num="35" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="38" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="56" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="63" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="64" count="0" type="stmt"/>
       </file>
     </package>
     <package name="src.middleware">
@@ -968,6 +999,37 @@
         <line num="189" count="0" type="stmt"/>
         <line num="195" count="0" type="stmt"/>
         <line num="197" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.services.telegram">
+      <metrics statements="25" coveredstatements="0" conditionals="5" coveredconditionals="0" methods="7" coveredmethods="0"/>
+      <file name="telegram-service.js" path="/Users/d/projects/personal-finance-tracker/src/services/telegram/telegram-service.js">
+        <metrics statements="25" coveredstatements="0" conditionals="5" coveredconditionals="0" methods="7" coveredmethods="0"/>
+        <line num="7" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="8" count="0" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="15" count="0" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="28" count="0" type="stmt"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="34" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="35" count="0" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="56" count="0" type="stmt"/>
+        <line num="61" count="0" type="stmt"/>
       </file>
     </package>
     <package name="src.utils">
