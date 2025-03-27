@@ -1,0 +1,14 @@
+{
+  "errors": {
+    "invalidCredentials": "Invalid credentials",
+    "userNotFound": "User not found",
+    "databaseError": "Database error occurred",
+    "invalidCurrency": "Invalid currency code",
+    "invalidCategory": "Invalid category"
+  },
+  "success": {
+    "expenseCreated": "Expense created successfully",
+    "expenseUpdated": "Expense updated successfully",
+    "expenseDeleted": "Expense deleted successfully"
+  }
+}

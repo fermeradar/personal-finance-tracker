@@ -1,10 +1,11 @@
 module.exports = {
   // Database configuration
   database: {
-    url: process.env.TEST_DATABASE_URL || 'postgresql://localhost:5432/personal_finance_test',
-    poolSize: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    host: 'localhost',
+    port: 5432,
+    database: 'personal_finance_test',
+    user: 'test_user',
+    password: 'test_password'
   },
 
   // Bot configuration
@@ -53,5 +54,10 @@ module.exports = {
     enableMultiLanguage: true,
     enableLocationTracking: true,
     enableBackup: true,
+  },
+
+  jwt: {
+    secret: 'test-secret-key',
+    expiresIn: '1h'
   }
 }; 

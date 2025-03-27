@@ -102,6 +102,22 @@ jobs:
           else
             echo "No critical or high vulnerabilities found. Continuing with moderate vulnerabilities."
           fi
+          
+      - name: Check for Snyk token
+        id: check-snyk
+        run: |
+          if [ -n "${{ secrets.SNYK_TOKEN }}" ]; then
+            echo "run_snyk=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_snyk=false" >> $GITHUB_OUTPUT
+            echo "::warning::Skipping Snyk security scan because SNYK_TOKEN is not provided"
+          fi
+      
+      - name: Run Snyk security scan
+        if: steps.check-snyk.outputs.run_snyk == 'true'
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   test:
     runs-on: ubuntu-latest

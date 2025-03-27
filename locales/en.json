@@ -1,0 +1,34 @@
+{
+  "common": {
+    "error": "Error",
+    "success": "Success",
+    "validation": {
+      "required": "This field is required",
+      "invalid": "Invalid value"
+    }
+  },
+  "expense": {
+    "added": "Expense added successfully",
+    "updated": "Expense updated successfully",
+    "deleted": "Expense deleted successfully"
+  },
+  "errors": {
+    "general": "An error occurred",
+    "notFound": "Resource not found",
+    "unauthorized": "Unauthorized access",
+    "invalidCredentials": "Invalid credentials",
+    "userNotFound": "User not found",
+    "invalidToken": "Invalid token",
+    "databaseError": "Database error occurred",
+    "invalidCurrency": "Invalid currency code",
+    "invalidAmount": "Invalid amount"
+  },
+  "success": {
+    "created": "Successfully created",
+    "updated": "Successfully updated",
+    "deleted": "Successfully deleted",
+    "expenseCreated": "Expense created successfully",
+    "expenseUpdated": "Expense updated successfully",
+    "expenseDeleted": "Expense deleted successfully"
+  }
+}

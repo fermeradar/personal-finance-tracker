@@ -1,32 +1,16 @@
-import winston from 'winston';
-import { config } from '../config/config.js';
+const winston = require('winston');
 
-const { format, createLogger, transports } = winston;
-const { combine, timestamp, printf, colorize, json } = format;
-
-const customFormat = printf(({ level, message, timestamp, ...metadata }) => {
-  let msg = `${timestamp} [${level}]: ${message}`;
-  if (Object.keys(metadata).length > 0) {
-    msg += ` ${JSON.stringify(metadata)}`;
-  }
-  return msg;
-});
-
-const logger = createLogger({
-  level: config.logging.level,
-  format: config.logging.format === 'json'
-    ? combine(timestamp(), json())
-    : combine(
-        colorize(),
-        timestamp(),
-        customFormat
-      ),
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
   transports: [
-    new transports.Console({
-      handleExceptions: true,
-    }),
-  ],
-  exitOnError: false,
+    new winston.transports.Console({
+      format: winston.format.simple()
+    })
+  ]
 });
 
-export { logger }; 
+module.exports = logger; 

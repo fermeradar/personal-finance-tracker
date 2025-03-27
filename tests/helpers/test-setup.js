@@ -1,11 +1,28 @@
-let $2;
-const { pool } = require('../../src/config/database');
-const { hashPassword } = require('../../src/utils/auth');
-const { generateToken } = require('../../src/utils/jwt');
-const _userManager = require($2);
+import { pool } from '../../database/db.js';
+import { v4 as uuidv4 } from 'uuid';
+import { hashPassword } from '../../src/utils/auth.js';
+import { generateToken } from '../../src/utils/jwt.js';
+import UserManager from '../../services/core/user-manager.js';
+import logger from '../../src/utils/logger.js';
+import { setupTestDatabase, cleanupTestDatabase } from './db-helper.js';
 
-// Common test data
-const TEST_DATA = {
+const userManager = new UserManager(pool);
+
+export const TEST_DATA = {
+  validUser: {
+    email: 'test@example.com',
+    password: 'test123',
+    firstName: 'Test',
+    lastName: 'User'
+  },
+  validCategory: {
+    name: 'Test Category'
+  },
+  validExpense: {
+    amount: 100,
+    currency: 'USD',
+    description: 'Test Expense'
+  },
   users: [
     {
       email: 'test@example.com',
@@ -45,105 +62,62 @@ const TEST_DATA = {
   ]
 };
 
-// Database setup functions
-async function setupDatabase() {
-  // Create test tables
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL,
-      first_name VARCHAR(50) NOT NULL,
-      last_name VARCHAR(50) NOT NULL,
-      language VARCHAR(2) DEFAULT 'en',
-      timezone VARCHAR(50) NOT NULL,
-      currency VARCHAR(3) NOT NULL,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS categories (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      name VARCHAR(100) NOT NULL,
-      icon VARCHAR(50) NOT NULL,
-      color VARCHAR(7) NOT NULL,
-      is_system BOOLEAN DEFAULT false,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS expenses (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id UUID REFERENCES users(id),
-      category_id UUID REFERENCES categories(id),
-      amount DECIMAL(10,2) NOT NULL,
-      currency VARCHAR(3) NOT NULL,
-      description TEXT NOT NULL,
-      date TIMESTAMP WITH TIME ZONE NOT NULL,
-      payment_method VARCHAR(20) NOT NULL,
-      merchant VARCHAR(100),
-      tags TEXT[],
-      receipt_url TEXT,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+export async function setupDatabase() {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM expenses');
+    await client.query('DELETE FROM categories');
+    await client.query('DELETE FROM users');
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
-async function cleanupDatabase() {
-  // Drop test tables
-  await pool.query(`
-    DROP TABLE IF EXISTS expenses;
-    DROP TABLE IF EXISTS categories;
-    DROP TABLE IF EXISTS users;
-  `);
+export async function cleanupDatabase() {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM expenses');
+    await client.query('DELETE FROM categories');
+    await client.query('DELETE FROM users');
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
-const insertTestData = async (client, userId) => {
-  // Insert categories
-  for (const category of TEST_DATA.categories) {
-    await client.query(`
-      INSERT INTO categories (name, name_normalized, icon, color, is_system, user_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
-    `, [category.name, category.name_normalized, category.icon, category.color, category.is_system, userId]);
+export async function createTestUser(overrides = {}) {
+  const userData = { ...TEST_DATA.validUser, ...overrides };
+  const userId = uuidv4();
+  const hashedPassword = await hashPassword(userData.password);
+
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `INSERT INTO users (
+        user_id, email, password, first_name, last_name
+      ) VALUES ($1, $2, $3, $4, $5)
+      RETURNING *`,
+      [userId, userData.email, hashedPassword, userData.firstName, userData.lastName]
+    );
+    return result.rows[0];
+  } finally {
+    client.release();
   }
-
-  // Insert exchange rates
-  for (const rate of TEST_DATA.exchangeRates) {
-    await client.query(`
-      INSERT INTO exchange_rates (currency_pair, rate, last_updated)
-      VALUES ($1, $2, NOW())
-    `, [rate.currency_pair, rate.rate]);
-  }
-
-  // Insert translations
-  for (const translation of TEST_DATA.translations) {
-    await client.query(`
-      INSERT INTO translations (key, language, value)
-      VALUES ($1, $2, $3)
-    `, [translation.key, translation.language, translation.value]);
-  }
-};
-
-// User setup functions
-async function createTestUser() {
-  const user = TEST_DATA.users[0];
-  const hashedPassword = await hashPassword(user.password);
-
-  const result = await pool.query(
-    `INSERT INTO users (email, password, first_name, last_name, language, timezone, currency)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
-     RETURNING id, email, first_name, last_name, language, timezone, currency`,
-    [user.email, hashedPassword, user.firstName, user.lastName, user.language, user.timezone, user.currency]
-  );
-
-  return result.rows[0];
 }
 
-async function createTestCategory() {
+export async function createTestCategory(client) {
   const category = TEST_DATA.categories[0];
 
-  const result = await pool.query(
+  const result = await client.query(
     `INSERT INTO categories (name, icon, color, is_system)
      VALUES ($1, $2, $3, $4)
      RETURNING id, name, icon, color, is_system`,
@@ -153,8 +127,8 @@ async function createTestCategory() {
   return result.rows[0];
 }
 
-async function createTestExpense(userId, categoryId) {
-  const result = await pool.query(
+export async function createTestExpense(client, userId, categoryId) {
+  const result = await client.query(
     `INSERT INTO expenses (user_id, category_id, amount, currency, description, date, payment_method)
      VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
@@ -164,8 +138,8 @@ async function createTestExpense(userId, categoryId) {
   return result.rows[0];
 }
 
-function generateTestToken(userId) {
-  return generateToken({ id: userId });
+export async function createTestToken(user) {
+  return generateToken(user);
 }
 
 // Test expense data generator
@@ -188,15 +162,48 @@ const getDateRange = (days) => {
 };
 
 // Export all helpers
-module.exports = {
+export default {
   TEST_DATA,
   setupDatabase,
   cleanupDatabase,
-  insertTestData,
   createTestUser,
   createTestCategory,
   createTestExpense,
-  generateTestToken,
+  createTestToken,
   generateTestExpense,
-  getDateRange
-}; 
+  getDateRange,
+  userManager,
+  setupTestDatabase,
+  cleanupTestDatabase
+};
+
+const TEST_USER = {
+  userId: 'test_user',
+  email: 'test@example.com',
+  password: 'testpass123',
+  firstName: 'Test',
+  language: 'en',
+  timezone: 'UTC',
+  currency: 'USD'
+};
+
+let client;
+
+beforeAll(async () => {
+  await setupTestDatabase();
+});
+
+beforeEach(async () => {
+  client = await pool.connect();
+});
+
+afterEach(async () => {
+  if (client) {
+    await cleanupTestDatabase(client);
+    await client.release();
+  }
+});
+
+afterAll(async () => {
+  await pool.end();
+}); 

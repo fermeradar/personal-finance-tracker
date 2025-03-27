@@ -31,3 +31,7 @@ docker/volumes/
 test.*
 deployment-test.md
 connection-test.md
+coverage/
+test-results/
+coverage/
+test-results/
